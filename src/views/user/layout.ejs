@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Account</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/css/util.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <style>
+        @media (min-width: 768px) {
+            .account-layout {
+                display: flex;
+            }
+            .account-sidebar {
+                width: 25%;
+                max-width: 250px;
+            }
+            .account-content {
+                width: 75%;
+                padding-left: 1rem;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <div class="w-full mb-5">
+        <%-include('partials/navbar')%>
+    </div>
+    <div class="container mx-auto p-4 mt-30">
+        <h1 class="text-3xl font-bold mb-6"></h1>
+        <div class="account-layout">
+            <!-- Sidebar -->
+            <div class="account-sidebar mb-40">
+                <div class="bg-white shadow-md rounded p-4">
+                    <ul>
+                        <li class="mb-2">
+                            <a href="/profile" 
+                               class="text-blue-600 hover:text-blue-800 <%= page === 'profile' ? 'font-bold' : '' %>">
+                               Profile
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="/profile/address" 
+                               class="text-blue-600 hover:text-blue-800 <%= page === 'address' ? 'font-bold' : '' %>">
+                               Address
+                            </a>
+                        </li>
+                        <li class="mb-2">
+                            <a href="/profile/orders" 
+                               class="text-blue-600 hover:text-blue-800 <%= page === 'orders' ? 'font-bold' : '' %>">
+                               Orders
+                            </a>
+                        </li>
+                        <li>
+                            <a href="/profile/wishlist" 
+                               class="text-blue-600 hover:text-blue-800 <%= page === 'wishlist' ? 'font-bold' : '' %>">
+                               Wishlist
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="account-content">
+                <%-include(page)%>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

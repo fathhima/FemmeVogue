@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Shoping Cart</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.png" />
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animate/animate.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/css-hamburgers/hamburgers.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/animsition/css/animsition.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/select2/select2.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="vendor/perfect-scrollbar/perfect-scrollbar.css">
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+	<!-- Add SweetAlert2 CSS -->
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
+	<!-- Add SweetAlert2 JS -->
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<!--===============================================================================================-->
+</head>
+
+<body class="animsition">
+
+	<!-- Navbar -->
+	<%- include("partials/navbar") %>
+
+		<!-- breadcrumb -->
+		<div class="container mt-5">
+			<div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
+				<a href="/" class="stext-109 cl8 hov-cl1 trans-04">
+					Home
+					<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+				</a>
+				<a href="/cart" class="stext-109 cl4">Shopping Cart</a>
+			</div>
+		</div>
+
+		<!-- Shopping Cart -->
+		<form class="bg0 p-t-75 p-b-85" id="cartForm">
+			<div class="container">
+				<div class="row">
+					<div class="col-lg-10 col-xl-7 m-lr-auto m-b-50">
+						<div class="m-l-25 m-r--38 m-lr-0-xl">
+							<div class="wrap-table-shopping-cart">
+								<table class="table-shopping-cart">
+									<tr class="table_head">
+										<th class="column-1">Product</th>
+										<th class="column-2"></th>
+										<th class="column-3">Price</th>
+										<th class="column-4">Size</th>
+										<th class="column-5">Color</th>
+										<th class="column-6">Quantity</th>
+										<th class="column-7">Total</th>
+										<th class="column-8">Action</th>
+									</tr>
+
+									<% if (cartItems && cartItems.length> 0) { %>
+										<% cartItems.forEach(item=> { %>
+											<tr class="table_row" data-cart-item-id="<%= item._id %>"
+												data-variant-id="<%= item.variantId %>">
+
+												<!-- Product Image -->
+												<td class="column-1">
+													<div class="how-itemcart1">
+														<% const colorOrder=['red', 'blue' , 'green' ]; const
+															selectedColor=item.variantId.color.toLowerCase(); const
+															colorIndex=colorOrder.indexOf(selectedColor); const
+															imageUrl=(colorIndex !==-1 &&
+															item.productId.image[colorIndex]) ?
+															item.productId.image[colorIndex] : item.productId.image[0];
+															%>
+															<img src="<%= imageUrl %>"
+																alt="<%= item.productId.brandName %> - <%= selectedColor %>">
+													</div>
+												</td>
+
+												<!-- Brand Name -->
+												<td class="column-2">
+													<%= item.productId.brandName %>
+												</td>
+
+												<!-- Price with Offer Logic -->
+												<td class="column-3">
+													<% if (item.hasOffer) { %>
+														<div class="price-container">
+															<span class="original-price"
+																style="text-decoration: line-through; color: #888; display: block;">
+																₹<%= item.originalPrice.toFixed(2) %>
+															</span>
+															<span class="discounted-price"
+																style="color: #e63946; font-weight: bold; display: block;">
+																₹<%= item.finalPrice.toFixed(2) %>
+															</span>
+															<span class="discount-badge"
+																style="color: #2a9d8f; font-size: 0.7em;">
+																Save ₹<%= (item.originalPrice -
+																	item.finalPrice).toFixed(2) %>
+															</span>
+														</div>
+														<% } else { %>
+															₹<%= item.variantId.price.toFixed(2) %>
+																<% } %>
+												</td>
+
+												<!-- Size and Color -->
+												<td class="column-4">
+													<%= item.variantId.size %>
+												</td>
+												<td class="column-5">
+													<%= item.variantId.color %>
+												</td>
+
+												<!-- Quantity Control -->
+												<td class="column-6">
+													<div class="wrap-num-product flex-w m-l-auto m-r-0">
+														<div
+															class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+															<i class="fs-16 zmdi zmdi-minus"></i>
+														</div>
+
+														<input class="mtext-104 cl3 txt-center num-product"
+															type="number" name="quantity" value="<%= item.quantity %>"
+															min="1" max="<%= item.variantId.stock %>"
+															data-original-price="<%= item.variantId.price %>"
+															data-discounted-price="<%= item.hasOffer ? item.finalPrice : item.variantId.price %>">
+
+														<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+															<i class="fs-16 zmdi zmdi-plus"></i>
+														</div>
+													</div>
+												</td>
+
+												<!-- Total Price -->
+												<td class="column-7">
+													<% const itemPrice=item.hasOffer ? item.finalPrice :
+														item.variantId.price; const totalItemPrice=itemPrice *
+														item.quantity; %>
+														₹<%= totalItemPrice.toFixed(2) %>
+												</td>
+
+												<!-- Delete Action -->
+												<td class="column-8">
+													<button class="delete-item-btn cl2 hov-cl1 trans-04"
+														style="border: none; background: none; cursor: pointer;">
+														<i class="zmdi zmdi-delete"></i>
+													</button>
+												</td>
+											</tr>
+											<% }); %>
+												<% } else { %>
+													<tr>
+														<td colspan="8" class="text-center p-4">
+															Your cart is empty. <a href="/shop" class="cl1">Continue
+																shopping</a>
+														</td>
+													</tr>
+													<% } %>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<!-- Cart Totals Section -->
+					<div class="col-sm-10 col-lg-7 col-xl-5 m-lr-auto m-b-50">
+						<div class="bor10 p-lr-40 p-t-30 p-b-40 m-l-63 m-r-40 m-lr-0-xl p-lr-15-sm">
+							<h4 class="mtext-109 cl2 p-b-30">
+								Cart Totals
+							</h4>
+
+							<!-- Subtotal Section -->
+							<div class="flex-w flex-t p-b-13">
+								<div class="size-208">
+									<span class="stext-110 cl2">
+										MRP (Original Price):
+									</span>
+								</div>
+								<div class="size-209 text-right">
+									<span class="mtext-110 cl2">
+										₹<%= cartItems.reduce((total, item)=> total + (item.variantId.price *
+											item.quantity), 0).toFixed(2) %>
+									</span>
+								</div>
+							</div>
+
+							<!-- Discount on MRP Section -->
+							<div class="flex-w flex-t p-b-13">
+								<div class="size-208">
+									<span class="stext-110 cl2">
+										Subtotal:
+									</span>
+								</div>
+								<div class="size-209 text-right">
+									<span class="mtext-110 cl2 text-success">
+										<% if (cartItems && cartItems.length > 0) { %>
+											<% cartItems.forEach(item => { %>
+												<% const itemPrice = item.hasOffer ? item.finalPrice : item.variantId.price; %>
+												<% const totalItemPrice = itemPrice * item.quantity; %>
+												₹<%= totalItemPrice.toFixed(2) %>
+											<% }); %>
+										<% } %>										
+									</span>
+								</div>
+							</div>
+
+							<!-- Coupon Discount Section -->
+							<div class="flex-w flex-t p-b-13">
+								<div class="size-208">
+									<span class="stext-110 cl2">
+										Coupon Discount:
+									</span>
+								</div>
+								<div class="size-209">
+									<div class="d-flex justify-content-end">
+										<button class="stext-101 cl0 bg3 p-lr-5 p-tb-3 trans-04 pointer ml-2 rounded"
+											style="font-size: 12px;">
+											Apply Coupon
+										</button>
+									</div>
+								</div>
+							</div>
+
+							<!-- Shipping Fee Section -->
+							<div class="flex-w flex-t p-b-13">
+								<div class="size-208">
+									<span class="stext-110 cl2">
+										Shipping Fee:
+									</span>
+								</div>
+								<div class="size-209 text-right">
+									<span class="mtext-110 cl2" data-shipping>
+										₹<%= shippingCharge %>
+									</span>
+								</div>
+							</div>
+
+							<!-- Total Section -->
+							<div class="flex-w flex-t p-t-27 p-b-33">
+								<div class="size-208">
+									<span class="mtext-101 cl2">
+										Total:
+									</span>
+								</div>
+								<div class="size-209 text-right">
+									<span class="mtext-110 cl2" data-total>
+										₹<%= total.toFixed(2) %>
+									</span>
+								</div>
+							</div>
+
+							
+						</div>
+					</div>
+
+					<!-- Proceed to Checkout Button -->
+					<form action="/checkout/address" method="GET">
+						<button type="submit"
+							class="flex-c-m stext-101 cl0 size-116 bg3 bor14 hov-btn3 p-lr-15 trans-04 pointer">
+							Proceed to Checkout
+						</button>
+					</form>
+				</div>
+			</div>
+
+			</div>
+			</div>
+		</form>
+
+		<!-- Footer -->
+		<%- include("partials/footer") %>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				// Check if required libraries are loaded
+				if (typeof axios === 'undefined') {
+					console.error('Axios is not loaded. Please include the Axios library.');
+					return;
+				}
+			
+				if (typeof Swal === 'undefined') {
+					console.error('SweetAlert2 is not loaded. Please include the SweetAlert2 library.');
+					return;
+				}
+			
+				// Format currency function
+				const formatCurrency = (amount) => {
+					return '₹' + parseFloat(amount).toFixed(2);
+				};
+			
+				// Function to calculate and update totals
+				const updateTotals = () => {
+					const rows = document.querySelectorAll('.table_row');
+					let subtotal = 0;
+					let totalDiscount = 0;
+					const shippingCharge = 99;
+			
+					// Calculate subtotal and discount from all rows
+					rows.forEach(row => {
+						const quantityInput = row.querySelector('.num-product');
+						const originalPrice = parseFloat(quantityInput.dataset.originalPrice);
+						const discountedPrice = parseFloat(quantityInput.dataset.discountedPrice);
+						const quantity = parseInt(quantityInput.value);
+			
+						subtotal += originalPrice * quantity;
+						
+						// Calculate discount if there's a price difference
+						if (discountedPrice !== originalPrice) {
+							totalDiscount += (originalPrice - discountedPrice) * quantity;
+						}
+					});
+			
+					// Calculate final total
+					const finalTotal = subtotal - totalDiscount + shippingCharge;
+			
+					// Update the display elements
+					const subtotalElement = document.querySelector('.mtext-110.cl2[data-subtotal]');
+					const discountElement = document.querySelector('[data-discount]');
+					const totalElement = document.querySelector('.flex-w.flex-t.p-t-27.p-b-33 .mtext-110.cl2[data-total]');
+					const shippingElement = document.querySelector('[data-shipping]');
+			
+					if (subtotalElement) {
+						subtotalElement.textContent = formatCurrency(subtotal);
+					}
+					if (discountElement) {
+						discountElement.textContent = formatCurrency(totalDiscount);
+					}
+					if (totalElement) {
+						totalElement.textContent = formatCurrency(finalTotal);
+					}
+					if (shippingElement) {
+						shippingElement.textContent = formatCurrency(shippingCharge);
+					}
+				};
+			
+				// Handle quantity controls
+				const quantityControls = document.querySelectorAll('.wrap-num-product');
+			
+				quantityControls.forEach(control => {
+					const minusBtn = control.querySelector('.btn-num-product-down');
+					const plusBtn = control.querySelector('.btn-num-product-up');
+					const input = control.querySelector('.num-product');
+					const priceCell = control.closest('tr').querySelector('.column-7');
+					const cartItemRow = control.closest('.table_row');
+					const cartItemId = cartItemRow.dataset.cartItemId;
+					const variantId = cartItemRow.dataset.variantId;
+					const originalPrice = parseFloat(input.dataset.originalPrice);
+					const discountedPrice = parseFloat(input.dataset.discountedPrice);
+					let previousValue = parseInt(input.value);
+					let isUpdating = false;
+			
+					// Update quantity on server
+					const updateQuantityOnServer = async (newQuantity) => {
+						if (isUpdating) return false;
+			
+						isUpdating = true;
+			
+						// Determine price based on offer
+						const finalPrice = input.dataset.hasOffer === 'true' 
+							? discountedPrice 
+							: originalPrice;
+						const newTotal = (finalPrice * newQuantity).toFixed(2);
+			
+						try {
+							const response = await axios.post('/cart/update', {
+								_id: cartItemId,
+								variantId: variantId,
+								quantity: newQuantity,
+								price: newTotal
+							});
+			
+							if (response.data.success) {
+								previousValue = newQuantity;
+								priceCell.textContent = formatCurrency(newTotal);
+								updateTotals();
+								return true;
+							} else {
+								throw new Error('Failed to update quantity');
+							}
+						} catch (error) {
+							console.error('Error updating quantity:', error);
+							Swal.fire({
+								title: 'Error',
+								text: 'Failed to update quantity. Please try again.',
+								icon: 'error',
+								confirmButtonColor: '#3085d6'
+							});
+							return false;
+						} finally {
+							isUpdating = false;
+						}
+					};
+			
+					// Handle quantity change
+					const handleQuantityChange = async (newValue) => {
+						if (isUpdating) return;
+			
+						if (newValue > 10) {
+							Swal.fire({
+								title: 'Maximum Limit Reached!',
+								text: 'You cannot order more than 10 items',
+								icon: 'warning',
+								confirmButtonText: 'OK',
+								confirmButtonColor: '#3085d6'
+							});
+							return;
+						}
+			
+						if (newValue < 1) {
+							newValue = 1;
+						}
+			
+						input.disabled = true;
+			
+						const success = await updateQuantityOnServer(newValue);
+			
+						if (success) {
+							input.value = newValue;
+							
+							// Determine price for display
+							const finalPrice = input.dataset.hasOffer === 'true' 
+								? discountedPrice 
+								: originalPrice;
+							const newTotal = (finalPrice * newValue).toFixed(2);
+							
+							priceCell.textContent = formatCurrency(newTotal);
+							updateTotals();
+						} else {
+							input.value = previousValue;
+						}
+			
+						input.disabled = false;
+					};
+			
+					// Button event listeners
+					minusBtn.addEventListener('click', (e) => {
+						e.preventDefault();
+						if (!isUpdating) {
+							const currentValue = parseInt(input.value);
+							if (currentValue > 1) {
+								handleQuantityChange(currentValue - 1);
+							}
+						}
+					});
+			
+					plusBtn.addEventListener('click', (e) => {
+						e.preventDefault();
+						if (!isUpdating) {
+							const currentValue = parseInt(input.value);
+							if (currentValue < 10) {
+								handleQuantityChange(currentValue + 1);
+							} else {
+								Swal.fire({
+									title: 'Maximum Limit Reached!',
+									text: 'You cannot order more than 10 items',
+									icon: 'warning',
+									confirmButtonText: 'OK',
+									confirmButtonColor: '#3085d6'
+								});
+							}
+						}
+					});
+			
+					// Input event listeners
+					input.addEventListener('change', function () {
+						if (!isUpdating) {
+							const newValue = parseInt(this.value) || 1;
+							handleQuantityChange(newValue);
+						}
+					});
+			
+					input.addEventListener('keypress', function (e) {
+						if (e.key === 'Enter') {
+							e.preventDefault();
+							this.blur();
+						}
+					});
+				});
+			
+				// Handle delete buttons
+				const deleteButtons = document.querySelectorAll('.delete-item-btn');
+			
+				deleteButtons.forEach(button => {
+					button.addEventListener('click', async function (e) {
+						e.preventDefault();
+			
+						const row = this.closest('tr');
+						const cartItemId = row.dataset.cartItemId;
+			
+						const result = await Swal.fire({
+							title: 'Remove Item',
+							text: 'Are you sure you want to remove this item from your cart?',
+							icon: 'warning',
+							showCancelButton: true,
+							confirmButtonColor: '#3085d6',
+							cancelButtonColor: '#d33',
+							confirmButtonText: 'Yes, remove it!',
+							cancelButtonText: 'Cancel'
+						});
+			
+						if (result.isConfirmed) {
+							try {
+								const response = await axios.delete(`/cart/remove/${cartItemId}`);
+			
+								if (response.data.success) {
+									row.style.transition = 'opacity 0.3s ease';
+									row.style.opacity = '0';
+			
+									setTimeout(() => {
+										row.remove();
+			
+										const remainingItems = document.querySelectorAll('.table_row');
+										if (remainingItems.length === 0) {
+											const emptyRow = document.createElement('tr');
+											emptyRow.innerHTML = `
+												<td colspan="8" class="text-center p-4">
+													Your cart is empty. <a href="/shop" class="cl1">Continue shopping</a>
+												</td>
+											`;
+											document.querySelector('.table-shopping-cart tbody').appendChild(emptyRow);
+										}
+			
+										updateTotals();
+									}, 300);
+			
+									Swal.fire({
+										title: 'Removed!',
+										text: 'Item has been removed from your cart.',
+										icon: 'success',
+										timer: 1500,
+										showConfirmButton: false
+									});
+								} else {
+									throw new Error('Failed to remove item');
+								}
+							} catch (error) {
+								console.error('Error removing item:', error);
+								Swal.fire({
+									title: 'Error',
+									text: 'Failed to remove item. Please try again.',
+									icon: 'error',
+									confirmButtonColor: '#3085d6'
+								});
+							}
+						}
+					});
+				});
+			
+				// Handle checkout form
+				const checkoutButton = document.querySelector('button.flex-c-m.stext-101.cl0.size-116.bg3.bor14.hov-btn3.p-lr-15.trans-04');
+			
+				if (checkoutButton) {
+					checkoutButton.addEventListener('click', function (e) {
+						// Prevent the default button submission
+						e.preventDefault();
+			
+						// Check if cart has items
+						const cartRows = document.querySelectorAll('.table_row');
+			
+						if (cartRows.length === 0) {
+							Swal.fire({
+								title: 'Empty Cart',
+								text: 'Please add items to your cart before proceeding to checkout.',
+								icon: 'warning',
+								confirmButtonColor: '#3085d6'
+							});
+							return;
+						}
+			
+						// If cart has items, proceed to checkout page
+						window.location.href = '/checkout/address';
+					});
+				}
+			
+				// Initial totals calculation
+				updateTotals();
+			});
+			</script>
+
+
+			<!-- Back to top -->
+			<div class="btn-back-to-top" id="myBtn">
+				<span class="symbol-btn-back-to-top">
+					<i class="zmdi zmdi-chevron-up"></i>
+				</span>
+			</div>
+
+			<!--===============================================================================================-->
+			<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="vendor/animsition/js/animsition.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="vendor/bootstrap/js/popper.js"></script>
+			<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="vendor/select2/select2.min.js"></script>
+			<script>
+				$(".js-select2").each(function () {
+					$(this).select2({
+						minimumResultsForSearch: 20,
+						dropdownParent: $(this).next('.dropDownSelect2')
+					});
+				})
+			</script>
+			<!--===============================================================================================-->
+			<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+			<script>
+				$('.js-pscroll').each(function () {
+					$(this).css('position', 'relative');
+					$(this).css('overflow', 'hidden');
+					var ps = new PerfectScrollbar(this, {
+						wheelSpeed: 1,
+						scrollingThreshold: 1000,
+						wheelPropagation: false,
+					});
+
+					$(window).on('resize', function () {
+						ps.update();
+					})
+				});
+			</script>
+			<!--===============================================================================================-->
+			<script src="js/main.js"></script>
+
+</body>
+
+</html>

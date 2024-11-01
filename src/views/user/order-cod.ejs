@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+	<title>Product</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="images/icons/favicon.png" />
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animate/animate.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/css-hamburgers/hamburgers.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animsition/css/animsition.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/select2/select2.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/daterangepicker/daterangepicker.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/slick/slick.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/MagnificPopup/magnific-popup.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/perfect-scrollbar/perfect-scrollbar.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+	<script src="https://cdn.tailwindcss.com"></script>
+	<!--===============================================================================================-->
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+</head>
+
+<body class="bg-gray-50">
+
+	<%- include("partials/navbar") %>
+
+	<main class="container mx-auto px-4 py-8 mt-5" style="z-index: -1300;">
+        <div class="max-w-3xl mx-auto bg-white rounded-lg shadow p-6">
+            <!-- Order Success Header -->
+            <div class="text-center mb-8">
+                <h1 class="text-2xl font-bold text-green-600 mb-2">Order Placed Successfully!</h1>
+                <p class="text-gray-600">Order ID: <%= order._id %></p>
+            </div>
+
+            <!-- Delivery Information -->
+            <div class="border-b pb-6 mb-6">
+                <h2 class="text-lg font-semibold mb-4">Delivery Information</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">Shipping Address</h3>
+                        <p class="text-gray-600">
+                            <%= order.shippingAddress.name %><br>
+                            <%= order.shippingAddress.addressLine %><br>
+                            Phone: <%= order.shippingAddress.phone %>
+                        </p>
+                    </div>
+                    <div>
+                        <h3 class="font-medium text-gray-700 mb-2">Expected Delivery</h3>
+                        <p class="text-gray-600">
+                            <%= order.deliveryDate %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Details -->
+            <div class="mb-6">
+                <h2 class="text-lg font-semibold mb-4">Order Details</h2>
+                <div class="space-y-4">
+                    <% order.items.forEach(item => { %>
+                        <div class="flex justify-between items-center border-b pb-4">
+                            <div>
+                                <h3 class="font-medium"><%= item.product.name %></h3>
+                                <p class="text-sm text-gray-600">Quantity: <%= item.quantity %></p>
+                            </div>
+                            <div class="text-right">
+                                <p class="font-medium">₹<%= item.price.toFixed(2) %></p>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="bg-gray-50 p-4 rounded-lg">
+                <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Subtotal</span>
+                        <span>₹<%= order.subtotal.toFixed(2) %></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-600">Shipping</span>
+                        <span>₹<%= order.shippingCharge.toFixed(2) %></span>
+                    </div>
+                    <div class="flex justify-between font-semibold border-t pt-2 mt-2">
+                        <span>Total</span>
+                        <span>₹<%= order.finalTotal.toFixed(2) %></span>
+                    </div>
+                    <div class="text-sm text-gray-600 mt-2">
+                        Payment Method: <%= order.paymentMethod.toUpperCase() %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="mt-8 flex justify-center space-x-4">
+                <a href="/profile/orders" class="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 transition-colors">
+                    View All Orders
+                </a>
+                <a href="/" class="bg-gray-600 text-white px-6 py-2 rounded-md hover:bg-gray-700 transition-colors">
+                    Continue Shopping
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <%- include('partials/footer') %>
+</body>
+</html>

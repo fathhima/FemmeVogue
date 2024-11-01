@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - FemmeVogue - Order Management</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin/index.css">
+
+    <!-- Loading Spinner CSS -->
+    <style>
+        .loading-spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 0.2em solid currentColor;
+            border-right-color: transparent;
+            border-radius: 50%;
+            animation: spinner-rotation 0.75s linear infinite;
+        }
+
+        @keyframes spinner-rotation {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        .btn .loading-spinner {
+            display: none;
+        }
+
+        .btn.loading .loading-spinner {
+            display: inline-block;
+        }
+
+        .btn.loading .btn-text {
+            display: none;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <%- include("partials/sidebar") %>
+
+            <!-- Page Content -->
+            <div id="page-content-wrapper">
+                <%- include("partials/navbar") %>
+
+                    <div class="container-fluid">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h1 class="mt-4">Order Management</h1>
+                            <div>
+                                <select class="form-select d-inline-block w-auto me-2" id="statusFilter">
+                                    <option value="all">All Orders</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="processing">Processing</option>
+                                    <option value="shipped">Shipped</option>
+                                    <option value="delivered">Delivered</option>
+                                    <option value="cancelled">Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Loading State -->
+                        <div id="loadingState" class="text-center py-5" style="display: none;">
+                            <div class="loading-spinner"></div>
+                            <p class="mt-2">Loading orders...</p>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="errorState" class="alert alert-danger" style="display: none;">
+                            An error occurred while loading orders. Please try again.
+                        </div>
+
+                        <!-- Empty State -->
+                        <div id="emptyState" class="text-center py-5" style="display: none;">
+                            <i class="fas fa-box-open fa-3x mb-3"></i>
+                            <p>No orders found matching the selected criteria.</p>
+                        </div>
+
+                        <div class="table-responsive" id="ordersTable">
+                            <table class="table table-striped table-hover">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th scope="col">Order ID</th>
+                                        <th scope="col">Customer</th>
+                                        <th scope="col">Items</th>
+                                        <th scope="col">Total</th>
+                                        <th scope="col">Payment</th>
+                                        <th scope="col">Order Status</th>
+                                        <th scope="col">Order Date</th>
+                                        <th scope="col">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% orders.forEach(order=> { %>
+                                        <tr>
+                                            <td>
+                                                <%= order._id.toString().slice(-6).toUpperCase() %>
+                                            </td>
+                                            <td>
+                                                <%= order.shippingAddress.name %><br>
+                                                    <small class="text-muted">
+                                                        <%= order.shippingAddress.phone %>
+                                                    </small>
+                                            </td>
+                                            <td>
+                                                <%= order.items.length %> items<br>
+                                            </td>
+                                            <td>₹<%= order.finalTotal %>
+                                            </td>
+                                            <td>
+                                                <%= order.paymentMethod.toUpperCase() %><br>
+                                                    <span
+                                                        class="badge bg-<%= order.paymentStatus === 'pending' ? 'warning' : 'success' %>">
+                                                        <%= order.paymentStatus %>
+                                                    </span>
+                                            </td>
+                                            <td>
+                                                <select class="form-select form-select-sm status-select"
+                                                    data-order-id="<%= order._id %>" <%=order.orderStatus==='cancelled'
+                                                    ? 'disabled' : '' %>>
+                                                    <option value="pending" <%=order.orderStatus==='pending'
+                                                        ? 'selected' : '' %>>Pending</option>
+                                                    <option value="processing" <%=order.orderStatus==='processing'
+                                                        ? 'selected' : '' %>>Processing</option>
+                                                    <option value="shipped" <%=order.orderStatus==='shipped'
+                                                        ? 'selected' : '' %>>Shipped</option>
+                                                    <option value="delivered" <%=order.orderStatus==='delivered'
+                                                        ? 'selected' : '' %>>Delivered</option>
+                                                    <option value="cancelled" <%=order.orderStatus==='cancelled'
+                                                        ? 'selected' : '' %>>Cancelled</option>
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <%= new Date(order.orderedAt).toLocaleDateString() %>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-info btn-sm"
+                                                    onclick="viewOrderDetails('<%= order._id %>')">
+                                                    <i class="fas fa-eye"></i>
+                                                </button>
+                                            </td>
+                                        </tr>
+                                        <% }) %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+            </div>
+    </div>
+
+    <!-- Order Details Modal -->
+    <div class="modal fade" id="orderDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Order Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalLoadingState" class="text-center py-3" style="display: none;">
+                        <div class="loading-spinner"></div>
+                        <p class="mt-2">Loading order details...</p>
+                    </div>
+                    <div id="modalContent" style="display: none;">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <h6>Shipping Information</h6>
+                                <div id="shippingInfo"></div>
+                            </div>
+                            <div class="col-md-6">
+                                <h6>Order Summary</h6>
+                                <div id="orderSummary"></div>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <h6>Order Items</h6>
+                            <div id="orderItems"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="position-fixed top-50 start-50 translate-middle" style="z-index: 10000;">
+        <div id="toastNotification" class="toast custom-toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto" id="toastTitle" style="font-size: 1.25rem;">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage" style="font-size: 1.125rem; padding: 1rem;">
+                This is a larger toast message!
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Axios -->
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <!-- SweetAlert -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        // ====== Helper Functions ======
+        // Toast notification helper with confirmation option
+        function showToastWithConfirmation(title, message, confirmCallback) {
+            const toastEl = document.getElementById('toastNotification');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastBody = document.getElementById('toastMessage');
+
+            // Create confirm and cancel buttons
+            const buttonContainer = document.createElement('div');
+            buttonContainer.className = 'mt-2 d-flex gap-2';
+
+            const confirmButton = document.createElement('button');
+            confirmButton.className = 'btn btn-danger btn-sm';
+            confirmButton.textContent = 'Confirm';
+
+            const cancelButton = document.createElement('button');
+            cancelButton.className = 'btn btn-secondary btn-sm';
+            cancelButton.textContent = 'Cancel';
+
+            buttonContainer.appendChild(confirmButton);
+            buttonContainer.appendChild(cancelButton);
+
+            toastTitle.textContent = title;
+            toastBody.innerHTML = `${message}<br>`;
+            toastBody.appendChild(buttonContainer);
+
+            const toast = new bootstrap.Toast(toastEl, { autohide: false });
+            toast.show();
+
+            confirmButton.addEventListener('click', () => {
+                confirmCallback(true);
+                toast.hide();
+            });
+
+            cancelButton.addEventListener('click', () => {
+                confirmCallback(false);
+                toast.hide();
+            });
+        }
+
+        // Simple toast notification
+        function showToast(title, message, isError = false) {
+            const toast = document.getElementById('toastNotification');
+            const toastTitle = document.getElementById('toastTitle');
+            const toastMessage = document.getElementById('toastMessage');
+
+            toastTitle.textContent = title;
+            toastMessage.textContent = message;
+            toast.classList.toggle('bg-danger', isError);
+            toast.classList.toggle('text-white', isError);
+
+            const bsToast = new bootstrap.Toast(toast);
+            bsToast.show();
+        }
+
+        // Loading state helper
+        function setLoading(element, isLoading) {
+            if (isLoading) {
+                element.classList.add('loading');
+                element.disabled = true;
+            } else {
+                element.classList.remove('loading');
+                element.disabled = false;
+            }
+        }
+
+        function initializeStatusSelects() {
+    document.querySelectorAll('.status-select').forEach(select => {
+        // Remove existing listeners first to prevent duplicates
+        const newSelect = select.cloneNode(true);
+        select.parentNode.replaceChild(newSelect, select);
+
+        // Store the initial value when the element is created
+        newSelect.setAttribute('data-previous-value', newSelect.value);
+
+        // Add change event listener
+        newSelect.addEventListener('change', function () {
+            const orderId = this.dataset.orderId;
+            const newStatus = this.value;
+            const cancelledOption = this.querySelector('option[value="cancelled"]');
+
+            // If delivered is selected, disable the cancelled option
+            if (newStatus === 'delivered') {
+                cancelledOption.disabled = true;
+            } else {
+                cancelledOption.disabled = false;
+            }
+            
+            updateOrderStatus(orderId, newStatus, this);
+        });
+
+        // Add focus event listener to store the value before change
+        newSelect.addEventListener('focus', function () {
+            this.setAttribute('data-previous-value', this.value);
+        });
+
+        // Also handle initial state
+        if (select.value === 'delivered') {
+            const cancelledOption = select.querySelector('option[value="cancelled"]');
+            if (cancelledOption) {
+                cancelledOption.disabled = true;
+            }
+        }
+    });
+}
+
+        // ====== Core Functions ======
+        // Update order status
+async function updateOrderStatus(orderId, status, selectElement) {
+    const previousValue = selectElement.getAttribute('data-previous-value');
+
+    // Prevent changing to cancelled if previous status was delivered
+    if (previousValue === 'delivered') {
+        showToast('Error', 'Cannot modify a delivered order', true);
+        selectElement.value = previousValue;
+        return;
+    }
+
+    // If status is being changed to 'cancelled', show confirmation toast
+    if (status === 'cancelled') {
+        showToastWithConfirmation(
+            'Confirm Cancellation',
+            'Are you sure you want to cancel this entire order? This action cannot be undone.',
+            async (confirmed) => {
+                if (confirmed) {
+                    try {
+                        setLoading(selectElement, true);
+                        await axios.put(`/admin/orders/${orderId}/status`, { status });
+                        showToast('Success', 'Order cancelled successfully');
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Error:', error);
+                        showToast('Error', 'Failed to cancel order', true);
+                        selectElement.value = previousValue;
+                    } finally {
+                        setLoading(selectElement, false);
+                    }
+                } else {
+                    selectElement.value = previousValue;
+                }
+            }
+        );
+        return;
+    }
+
+    // For other status updates
+    try {
+        setLoading(selectElement, true);
+        await axios.put(`/admin/orders/${orderId}/status`, { status });
+        showToast('Success', 'Order status updated successfully');
+        
+        // If status is changed to delivered, disable all future changes
+        if (status === 'delivered') {
+            selectElement.disabled = true;
+            const allStatusSelects = document.querySelectorAll(`.status-select[data-order-id="${orderId}"]`);
+            allStatusSelects.forEach(select => {
+                select.disabled = true;
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        showToast('Error', 'Failed to update order status', true);
+        selectElement.value = previousValue;
+    } finally {
+        setLoading(selectElement, false);
+    }
+}
+
+        // Cancel individual item
+        async function cancelOrderItem(orderId, itemId) {
+            showToastWithConfirmation(
+                'Confirm Item Cancellation',
+                'Are you sure you want to cancel this item? This action cannot be undone.',
+                async (confirmed) => {
+                    if (confirmed) {
+                        try {
+                            await axios.put(`/admin/orders/${orderId}/items/${itemId}/cancel`);
+                            showToast('Success', 'Item cancelled successfully');
+                            await viewOrderDetails(orderId);
+                        } catch (error) {
+                            console.error('Error:', error);
+                            showToast('Error', 'Failed to cancel item', true);
+                        }
+                    }
+                }
+            );
+        }
+
+        // Update the viewOrderDetails function to include status select for each item
+        async function viewOrderDetails(orderId) {
+            const modal = new bootstrap.Modal(document.getElementById('orderDetailsModal'));
+            const loadingState = document.getElementById('modalLoadingState');
+            const modalContent = document.getElementById('modalContent');
+
+            try {
+                loadingState.style.display = 'block';
+                modalContent.style.display = 'none';
+                modal.show();
+
+                const { data: order } = await axios.get(`/admin/orders/${orderId}`);
+
+                // Populate shipping information
+                document.getElementById('shippingInfo').innerHTML = `
+            <p><strong>Name:</strong> ${order.shippingAddress.name}</p>
+            <p><strong>Address:</strong> ${order.shippingAddress.addressLine}</p>
+            <p><strong>Phone:</strong> ${order.shippingAddress.phone}</p>
+            <p><strong>Address Type:</strong> ${order.shippingAddress.addressType}</p>
+        `;
+
+                // Populate order summary
+                document.getElementById('orderSummary').innerHTML = `
+            <p><strong>Order ID:</strong> ${order._id}</p>
+            <p><strong>Order Date:</strong> ${new Date(order.orderedAt).toLocaleString()}</p>
+            <p><strong>Subtotal:</strong> ₹${order.subtotal}</p>
+            <p><strong>Shipping:</strong> ₹${order.shippingCharge}</p>
+            <p><strong>Total:</strong> ₹${order.finalTotal}</p>
+            <p><strong>Payment Method:</strong> ${order.paymentMethod.toUpperCase()}</p>
+            <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
+            <p><strong>Order Status:</strong> ${order.orderStatus}</p>
+        `;
+
+                // Populate order items with individual status selects
+                const itemsHtml = order.items.map(item => `
+            <div class="card mb-2">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-2">
+                            <img src="/${item.productId.image[0]}" 
+                                 alt="${item.productId.brandName}"
+                                 class="img-fluid">
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="card-title mb-1">${item.productId.brandName}</h6>
+                            <p class="card-text mb-0">
+                                <small class="text-muted">Size: ${item.variantId.size}</small><br>
+                                <small class="text-muted">Color: ${item.variantId.color}</small>
+                            </p>
+                            <p class="card-text">
+                                Price: ₹${item.variantId.price} × ${item.quantity} = ₹${item.price}
+                            </p>
+                        </div>
+                        <div class="col-md-3">
+                            ${order.orderStatus !== 'cancelled' && order.orderStatus !== 'delivered' && !item.cancelled ? `
+                                <select class="form-select form-select-sm item-status-select" 
+                                        data-order-id="${order._id}"
+                                        data-item-id="${item._id}"
+                                        ${order.orderStatus === 'cancelled' || order.orderStatus === 'delivered' ? 'disabled' : ''}>
+                                    <option value="pending" ${(item.status || 'pending') === 'pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="processing" ${(item.status || order.orderStatus) === 'processing' ? 'selected' : ''}>Processing</option>
+                                    <option value="shipped" ${(item.status || order.orderStatus) === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                    <option value="delivered" ${(item.status || order.orderStatus) === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                </select>
+                            ` : '<span class="badge bg-danger">Cancelled</span>'}
+                        </div>
+                        <div class="col-md-3 text-md-end">
+                            <span class="badge bg-secondary">Qty: ${item.quantity}</span>
+                            ${!item.cancelled && order.orderStatus !== 'delivered' && order.orderStatus !== 'cancelled' ? `
+                                <button class="btn btn-danger btn-sm mt-2" 
+                                        onclick="cancelOrderItem('${order._id}', '${item._id}')">
+                                    Cancel Item
+                                </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+                document.getElementById('orderItems').innerHTML = itemsHtml;
+
+                // Initialize item status select handlers
+                initializeItemStatusSelects();
+
+                loadingState.style.display = 'none';
+                modalContent.style.display = 'block';
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error', 'Failed to load order details', true);
+                modal.hide();
+            }
+        }
+
+        // Initialize item status select handlers
+        function initializeItemStatusSelects() {
+            document.querySelectorAll('.item-status-select').forEach(select => {
+                // Remove existing listeners first to prevent duplicates
+                const newSelect = select.cloneNode(true);
+                select.parentNode.replaceChild(newSelect, select);
+
+                // Store the initial value when the element is created
+                newSelect.setAttribute('data-previous-value', newSelect.value);
+
+                // Add change event listener
+                newSelect.addEventListener('change', function () {
+                    const orderId = this.dataset.orderId;
+                    const itemId = this.dataset.itemId;
+                    const newStatus = this.value;
+                    updateItemStatus(orderId, itemId, newStatus, this);
+                });
+
+                // Add focus event listener to store the value before change
+                newSelect.addEventListener('focus', function () {
+                    this.setAttribute('data-previous-value', this.value);
+                });
+            });
+        }
+
+        // Update individual item status
+        async function updateItemStatus(orderId, itemId, status, selectElement) {
+            const previousValue = selectElement.getAttribute('data-previous-value');
+
+            try {
+                setLoading(selectElement, true);
+                await axios.put(`/admin/orders/${orderId}/items/${itemId}/status`, { status });
+                showToast('Success', 'Item status updated successfully');
+
+                // If all items have the same status, update the overall order status
+                const { data: order } = await axios.get(`/admin/orders/${orderId}`);
+                const nonCancelledItems = order.items.filter(item => !item.cancelled);
+                const allSameStatus = nonCancelledItems.every(item => item.status === status);
+
+                if (allSameStatus) {
+                    const orderStatusSelect = document.querySelector(`.status-select[data-order-id="${orderId}"]`);
+                    if (orderStatusSelect) {
+                        orderStatusSelect.value = status;
+                        await updateOrderStatus(orderId, status, orderStatusSelect);
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error', 'Failed to update item status', true);
+                selectElement.value = previousValue;
+            } finally {
+                setLoading(selectElement, false);
+            }
+        }
+
+        // Filter orders
+        async function filterOrders() {
+            const status = document.getElementById('statusFilter').value;
+            const tableContainer = document.getElementById('ordersTable');
+            const loadingState = document.getElementById('loadingState');
+            const emptyState = document.getElementById('emptyState');
+            const errorState = document.getElementById('errorState');
+
+            try {
+                tableContainer.style.display = 'none';
+                emptyState.style.display = 'none';
+                errorState.style.display = 'none';
+                loadingState.style.display = 'block';
+
+                const { data: orders } = await axios.get(`/admin/orders?status=${status}`);
+
+                if (orders.length === 0) {
+                    emptyState.style.display = 'block';
+                    tableContainer.style.display = 'none';
+                    return;
+                }
+
+                // Update table with new orders
+                const tbody = tableContainer.querySelector('tbody');
+                tbody.innerHTML = orders.map(order => `
+                    <tr>
+                        <td>${order._id.toString().slice(-6).toUpperCase()}</td>
+                        <td>
+                            ${order.shippingAddress.name}<br>
+                            <small class="text-muted">${order.shippingAddress.phone}</small>
+                        </td>
+                        <td>
+                            ${order.items.length} items<br>
+                            <button class="btn btn-sm btn-link p-0" onclick="viewOrderDetails('${order._id}')">View Details</button>
+                        </td>
+                        <td>₹${order.finalTotal}</td>
+                        <td>
+                            ${order.paymentMethod.toUpperCase()}<br>
+                            <span class="badge bg-${order.paymentStatus === 'pending' ? 'warning' : 'success'}">
+                                ${order.paymentStatus}
+                            </span>
+                        </td>
+                        <td>
+                            <select class="form-select form-select-sm status-select" 
+                                    data-order-id="${order._id}"
+                                    ${order.orderStatus === 'cancelled' || order.orderStatus === 'delivered' ? 'disabled' : ''}>
+                                <option value="pending" ${order.orderStatus === 'pending' ? 'selected' : ''}>Pending</option>
+                                <option value="processing" ${order.orderStatus === 'processing' ? 'selected' : ''}>Processing</option>
+                                <option value="shipped" ${order.orderStatus === 'shipped' ? 'selected' : ''}>Shipped</option>
+                                <option value="delivered" ${order.orderStatus === 'delivered' ? 'selected' : ''}>Delivered</option>
+                                <option value="cancelled" ${order.orderStatus === 'cancelled' ? 'selected' : ''}>Cancelled</option>
+                            </select>
+                        </td>
+                        <td>${new Date(order.orderedAt).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-info btn-sm" onclick="viewOrderDetails('${order._id}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `).join('');
+
+                tableContainer.style.display = 'block';
+                initializeStatusSelects();
+            } catch (error) {
+                console.error('Error:', error);
+                errorState.style.display = 'block';
+            } finally {
+                loadingState.style.display = 'none';
+            }
+        }
+
+        // ====== Initialize Everything ======
+        document.addEventListener('DOMContentLoaded', function () {
+            // Initialize Bootstrap tooltips
+            const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+            tooltipTriggerList.map(function (tooltipTriggerEl) {
+                return new bootstrap.Tooltip(tooltipTriggerEl);
+            });
+
+            // Initialize status filter
+            document.getElementById('statusFilter').addEventListener('change', filterOrders);
+
+            // Initialize status select handlers
+            initializeStatusSelects();
+        });
+    </script>
+    <style>
+        .custom-toast {
+            max-width: 600px;
+            padding: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .toast-header {
+            font-size: 1.25rem;
+        }
+    </style>
+</body>
+
+</html>

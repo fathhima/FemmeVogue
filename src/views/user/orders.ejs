@@ -1,0 +1,523 @@
+<div class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold mb-6">My Orders</h2>
+
+    <% if (orders && orders.length> 0) { %>
+        <div class="w-full">
+            <table class="min-w-full bg-white shadow-md rounded-lg">
+                <thead class="bg-gray-100">
+                    <tr>
+                        <th class="px-6 py-3 text-left"></th>
+                        <th class="px-6 py-3 text-left">Order ID</th>
+                        <th class="px-6 py-3 text-left">Date</th>
+                        <th class="px-6 py-3 text-left">Total</th>
+                        <th class="px-6 py-3 text-left">Status</th>
+                        <th class="px-6 py-3 text-left">Payment</th>
+                        <th class="px-6 py-3 text-left">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <% orders.forEach(order=> { %>
+                        <tr class="border-b">
+                            <td class="px-6 py-4">
+                                <button onclick="toggleOrderDetails('<%= order._id %>')" class="text-blue-500">
+                                    <span id="arrow-<%= order._id %>">▶</span>
+                                </button>
+                            </td>
+                            <td class="px-6 py-4">
+                                <%= order._id %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <%= new Date(order.orderedAt).toLocaleDateString() %>
+                            </td>
+                            <td class="px-6 py-4">₹<%= order.finalTotal %>
+                            </td>
+                            <td class="px-6 py-4">
+                                <span class="<%= order.orderStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 
+                                               order.orderStatus === 'processing' ? 'bg-blue-100 text-blue-800' :
+                                               order.orderStatus === 'delivered' ? 'bg-green-100 text-green-800' :
+                                               'bg-red-100 text-red-800' %> 
+                                       px-2 py-1 rounded-full text-sm">
+                                    <%= order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1) %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4">
+                                <%= order.paymentMethod.toUpperCase() %> - <%= order.paymentStatus %>
+                            </td>
+                            <td class="px-1 py-10 flex justify-end space-x-2">
+                                <button data-order='<%- JSON.stringify(order) %>'
+                                    onclick="viewOrderDetails(this.dataset.order)"
+                                    class="bg-blue-500 text-white px-2 py-2 text-sm rounded hover:bg-blue-600">
+                                    View
+                                </button>
+
+                                <% if (order.orderStatus==='pending' || order.orderStatus==='processing' ) { %>
+                                    <button onclick="showCancelDialog('<%= order._id %>', 'full')"
+                                        class="bg-red-500 text-white px-2 py-2 text-sm rounded hover:bg-red-600">
+                                        Cancel Order
+                                    </button>
+                                    <% } %>
+                            </td>
+
+                        </tr>
+                        <!-- Expandable Product Details -->
+                        <tr id="details-<%= order._id %>" class="hidden bg-gray-50">
+                            <td colspan="7" class="px-6 py-4">
+                                <div class="space-y-4">
+                                    <h4 class="font-semibold">Order Items:</h4>
+                                    <table class="min-w-full">
+                                        <thead class="bg-gray-100">
+                                            <tr>
+                                                <th class="px-4 py-2 text-left">Product</th>
+                                                <th class="px-4 py-2 text-left">Price</th>
+                                                <th class="px-4 py-2 text-left">Quantity</th>
+                                                <th class="px-4 py-2 text-left">Status</th>
+                                                <th class="px-4 py-2 text-left">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <% order.items.forEach(product=> { %>
+                                                <tr>
+                                                    <td class="px-4 py-2">
+                                                        <%= product.productId.brandName %>
+                                                    </td>
+                                                    <td class="px-4 py-2">₹<%= product.price %>
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        <%= product.quantity %>
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        <%= product.status %>
+                                                    </td>
+                                                    <td class="px-4 py-2">
+                                                        <% if (product.status==='pending' ||
+                                                            product.status==='processing' ) { %>
+                                                            <button
+                                                                onclick="showCancelDialog('<%= order._id %>', 'product', '<%= product.id %>')"
+                                                                class="text-red-500 hover:text-red-700">
+                                                                Cancel Item
+                                                            </button>
+                                                            <% } %>
+                                                    </td>
+                                                </tr>
+                                                <% }) %>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        <% }) %>
+                </tbody>
+            </table>
+        </div>
+        <% } else { %>
+            <div class="bg-white p-8 text-center rounded-lg shadow">
+                <p class="text-gray-600">No orders found</p>
+            </div>
+            <% } %>
+</div>
+
+<!-- View Order Details Modal -->
+<div id="viewOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-lg font-semibold">Order Details</h3>
+            <button onclick="hideViewOrderModal()" class="text-gray-500 hover:text-gray-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
+                    </path>
+                </svg>
+            </button>
+        </div>
+        <div class="space-y-4">
+            <!-- Order Information -->
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <h4 class="font-medium text-gray-700">Order Information</h4>
+                    <div class="mt-2 space-y-2">
+                        <p><span class="font-medium">Order ID:</span> <span id="viewOrderId"></span></p>
+                        <p><span class="font-medium">Order Date:</span> <span id="viewOrderDate"></span></p>
+                        <p><span class="font-medium">Order Status:</span> <span id="viewOrderStatus"></span></p>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="font-medium text-gray-700">Payment Details</h4>
+                    <div class="mt-2 space-y-2">
+                        <p><span class="font-medium">Payment Method:</span> <span id="viewPaymentMethod"></span></p>
+                        <p><span class="font-medium">Payment Status:</span> <span id="viewPaymentStatus"></span></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Address -->
+            <div>
+                <h4 class="font-medium text-gray-700">Shipping Address</h4>
+                <div class="mt-2 p-3 bg-gray-50 rounded">
+                    <p><span id="viewShippingName"></span></p>
+                    <p><span id="viewShippingAddress"></span></p>
+                    <p>Phone: <span id="viewShippingPhone"></span></p>
+                    <p>Type: <span id="viewAddressType"></span></p>
+                </div>
+            </div>
+
+            <!-- Order Items -->
+            <div>
+                <h4 class="font-medium text-gray-700">Order Items</h4>
+                <div class="mt-2" id="viewOrderItems">
+                    <!-- Items will be inserted here -->
+                </div>
+            </div>
+
+            <!-- Price Breakdown -->
+            <div>
+                <h4 class="font-medium text-gray-700">Price Details</h4>
+                <div class="mt-2 space-y-2">
+                    <div class="flex justify-between">
+                        <span>Subtotal:</span>
+                        <span id="viewSubtotal"></span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span>Shipping Charge:</span>
+                        <span id="viewShippingCharge"></span>
+                    </div>
+                    <div class="flex justify-between font-medium">
+                        <span>Total Amount:</span>
+                        <span id="viewFinalTotal"></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Dialog (Hidden by default) -->
+<div id="cancelDialog" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+    <div class="bg-white p-6 rounded-lg max-w-md w-full mx-4">
+        <h3 class="text-lg font-semibold mb-4">Cancel Confirmation</h3>
+        <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+                Reason for Cancellation
+            </label>
+            <select id="cancelReason" class="w-full p-2 border rounded mb-2">
+                <option value="">Select a reason</option>
+                <option value="changed_mind">Changed my mind</option>
+                <option value="better_price">Found better price elsewhere</option>
+                <option value="delivery_time">Delivery time too long</option>
+                <option value="mistake">Ordered by mistake</option>
+                <option value="payment_issue">Payment issues</option>
+                <option value="other">Other (specify)</option>
+            </select>
+            <input type="text" id="customReason" placeholder="Specify your reason"
+                class="w-full p-2 border rounded hidden">
+        </div>
+        <div class="flex justify-end space-x-3">
+            <button onclick="hideCancelDialog()" class="px-4 py-2 text-gray-600 hover:text-gray-800">
+                Cancel
+            </button>
+            <button onclick="confirmCancel()" class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+    let currentCancelData = null;
+
+    function toggleOrderDetails(orderId) {
+        const detailsRow = document.getElementById(`details-${orderId}`);
+        const arrow = document.getElementById(`arrow-${orderId}`);
+
+        if (detailsRow.classList.contains('hidden')) {
+            detailsRow.classList.remove('hidden');
+            arrow.textContent = '▼';
+        } else {
+            detailsRow.classList.add('hidden');
+            arrow.textContent = '▶';
+        }
+    }
+
+    function viewOrderDetails(orderData) {
+        const order = JSON.parse(orderData);
+
+        // Fill in the modal with order details
+        document.getElementById('viewOrderId').textContent = order._id;
+        document.getElementById('viewOrderDate').textContent = new Date(order.orderedAt).toLocaleString();
+        document.getElementById('viewOrderStatus').textContent = order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1);
+        document.getElementById('viewPaymentMethod').textContent = order.paymentMethod.toUpperCase();
+        document.getElementById('viewPaymentStatus').textContent = order.paymentStatus;
+
+        // Shipping address
+        document.getElementById('viewShippingName').textContent = order.shippingAddress.name;
+        document.getElementById('viewShippingAddress').textContent = order.shippingAddress.addressLine;
+        document.getElementById('viewShippingPhone').textContent = order.shippingAddress.phone;
+        document.getElementById('viewAddressType').textContent = order.shippingAddress.addressType;
+
+        // Order items
+        const itemsContainer = document.getElementById('viewOrderItems');
+        itemsContainer.innerHTML = `
+            <table class="min-w-full">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-4 py-2 text-left">Product</th>
+                        <th class="px-4 py-2 text-left">Price</th>
+                        <th class="px-4 py-2 text-left">Quantity</th>
+                        <th class="px-4 py-2 text-left">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${order.items.map(item => `
+                        <tr class="border-b">
+                            <td class="px-4 py-2">${item.productId.brandName}</td>
+                            <td class="px-4 py-2">₹${item.price}</td>
+                            <td class="px-4 py-2">${item.quantity}</td>
+                            <td class="px-4 py-2">${item.status}</td>
+                        </tr>
+                    `).join('')}
+                </tbody>
+            </table>
+        `;
+
+        // Price details
+        document.getElementById('viewSubtotal').textContent = `₹${order.subtotal}`;
+        document.getElementById('viewShippingCharge').textContent = `₹${order.shippingCharge}`;
+        document.getElementById('viewFinalTotal').textContent = `₹${order.finalTotal}`;
+
+        // Show the modal
+        document.getElementById('viewOrderModal').classList.remove('hidden');
+    }
+
+    function hideViewOrderModal() {
+        document.getElementById('viewOrderModal').classList.add('hidden');
+    }
+
+    // Existing functions remain the same
+    function showCancelDialog(orderId, type, productId = null) {
+        currentCancelData = { orderId, type, productId };
+        document.getElementById('cancelDialog').classList.remove('hidden');
+        document.getElementById('cancelReason').value = '';
+        document.getElementById('customReason').value = '';
+        document.getElementById('customReason').classList.add('hidden');
+    }
+
+    function hideCancelDialog() {
+        document.getElementById('cancelDialog').classList.add('hidden');
+        currentCancelData = null;
+    }
+
+    // Handle reason dropdown change
+    document.getElementById('cancelReason').addEventListener('change', function () {
+        const customReasonInput = document.getElementById('customReason');
+        if (this.value === 'other') {
+            customReasonInput.classList.remove('hidden');
+        } else {
+            customReasonInput.classList.add('hidden');
+        }
+    });
+
+    async function confirmCancel() {
+        const reasonSelect = document.getElementById('cancelReason');
+        const customReasonInput = document.getElementById('customReason');
+
+        if (!reasonSelect.value) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please select a cancellation reason'
+            });
+            return;
+        }
+
+        const reason = reasonSelect.value === 'other' ? customReasonInput.value : reasonSelect.value;
+
+        if (reasonSelect.value === 'other' && !customReasonInput.value.trim()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Please specify your reason'
+            });
+            return;
+        }
+
+        try {
+            const endpoint = currentCancelData.type === 'full'
+                ? `/profile/orders/${currentCancelData.orderId}/cancel`
+                : `/profile/orders/${currentCancelData.orderId}/products/${currentCancelData.productId}/cancel`;
+
+            const response = await axios.post(endpoint, {
+                reason: reason
+            });
+
+            if (response.status === 200) {
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Success',
+                    text: 'Cancellation successful',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    window.location.reload();
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.response?.data?.message || 'An error occurred while processing your request'
+            });
+        }
+
+        hideCancelDialog();
+    }
+
+    // Close modals when clicking outside
+    window.addEventListener('click', function (event) {
+        const viewOrderModal = document.getElementById('viewOrderModal');
+        const cancelDialog = document.getElementById('cancelDialog');
+
+        if (event.target === viewOrderModal) {
+            hideViewOrderModal();
+        }
+
+        if (event.target === cancelDialog) {
+            hideCancelDialog();
+        }
+    });
+
+    // Close modals on escape key
+    document.addEventListener('keydown', function (event) {
+        if (event.key === 'Escape') {
+            hideViewOrderModal();
+            hideCancelDialog();
+        }
+    });
+
+    // Format currency helper function
+    function formatCurrency(amount) {
+        return new Intl.NumberFormat('en-IN', {
+            style: 'currency',
+            currency: 'INR',
+            minimumFractionDigits: 2
+        }).format(amount);
+    }
+
+    // Format date helper function
+    function formatDate(dateString) {
+        return new Date(dateString).toLocaleString('en-IN', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+    }
+
+    // Handle any errors in the JSON parsing
+    function safeJSONParse(str) {
+        try {
+            return JSON.parse(str);
+        } catch (e) {
+            console.error('Error parsing JSON:', e);
+            return null;
+        }
+    }
+
+    // Enhance error handling for viewOrderDetails
+    function viewOrderDetails(orderData) {
+        const order = safeJSONParse(orderData);
+        if (!order) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to load order details'
+            });
+            return;
+        }
+
+        try {
+            // Fill in the modal with order details
+            document.getElementById('viewOrderId').textContent = order._id;
+            document.getElementById('viewOrderDate').textContent = formatDate(order.orderedAt);
+            document.getElementById('viewOrderStatus').textContent = order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1);
+            document.getElementById('viewPaymentMethod').textContent = order.paymentMethod.toUpperCase();
+            document.getElementById('viewPaymentStatus').textContent = order.paymentStatus;
+
+            // Shipping address
+            document.getElementById('viewShippingName').textContent = order.shippingAddress.name;
+            document.getElementById('viewShippingAddress').textContent = order.shippingAddress.addressLine;
+            document.getElementById('viewShippingPhone').textContent = order.shippingAddress.phone;
+            document.getElementById('viewAddressType').textContent = order.shippingAddress.addressType;
+
+            // Order items
+            const itemsContainer = document.getElementById('viewOrderItems');
+            itemsContainer.innerHTML = `
+    <table class="min-w-full">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="px-4 py-2 text-left">Product</th>
+                <th class="px-4 py-2 text-left">Price</th>
+                <th class="px-4 py-2 text-left">Quantity</th>
+                <th class="px-4 py-2 text-left">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            ${order.items.map(item => `
+                <tr class="border-b">
+                    <td class="px-4 py-2">${item.productId.brandName || 'N/A'}</td>
+                    <td class="px-4 py-2">${formatCurrency(item.price)}</td>
+                    <td class="px-4 py-2">${item.quantity}</td>
+                    <td class="px-4 py-2">${item.status}</td>
+                </tr>
+            `).join('')}
+        </tbody>
+    </table>
+`;
+
+            // Price details
+            document.getElementById('viewSubtotal').textContent = formatCurrency(order.subtotal);
+            document.getElementById('viewShippingCharge').textContent = formatCurrency(order.shippingCharge);
+            document.getElementById('viewFinalTotal').textContent = formatCurrency(order.finalTotal);
+
+            // Show the modal
+            document.getElementById('viewOrderModal').classList.remove('hidden');
+        } catch (error) {
+            console.error('Error displaying order details:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Failed to display order details'
+            });
+        }
+    }
+
+    // Add loading states for better UX
+    async function performAction(actionFn, loadingMessage = 'Processing...') {
+        try {
+            Swal.fire({
+                title: loadingMessage,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+
+            await actionFn();
+
+            Swal.close();
+        } catch (error) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: error.message || 'An error occurred'
+            });
+        }
+    }
+
+    // Initialize any tooltips or popovers
+    document.addEventListener('DOMContentLoaded', function () {
+        // Add any initialization code here
+        console.log('Order management system initialized');
+    });
+</script>

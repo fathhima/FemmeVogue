@@ -1,0 +1,392 @@
+<div class="bg-white shadow-md rounded p-4">
+    <h2 class="text-2xl font-bold mb-4">Addresses</h2>
+    <% if (addresses && addresses.length > 0) { %>
+        <% addresses.forEach(function(address) { %>
+            <div class="border p-4 mb-4 rounded" 
+                 data-address-id="<%= address._id %>"
+                 data-address='<%= JSON.stringify(address) %>'>
+                <div class="flex justify-between items-start">
+                    <div>
+                        <p class="font-semibold">
+                            <%= address.name %> (<%= address.addressType %>)
+                        </p>
+                        <p>
+                            <%= address.phone %>
+                        </p>
+                        <p>
+                            <%= address.address %>
+                        </p>
+                        <p>
+                            <%= address.city %>, <%= address.district %>
+                        </p>
+                        <p>
+                            <%= address.state %>, <%= address.country %> - <%= address.postalCode %>
+                        </p>
+                        <% if (address.isDefault) { %>
+                            <span class="inline-block bg-green-100 text-green-800 text-xs px-2 py-1 rounded mt-2">
+                                Default Address
+                            </span>
+                        <% } %>
+                    </div>
+                    <div class="space-x-2">
+                        <button onclick="editAddress('<%= address._id %>')"
+                            class="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                            Edit
+                        </button>
+                        <button onclick="deleteAddress('<%= address._id %>')"
+                            class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <% }); %>
+    <% } else { %>
+        <p>No addresses found.</p>
+    <% } %>
+
+    <button id="addAddressBtn"
+        class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 mt-4">
+        Add New Address
+    </button>
+</div>
+
+<!-- Modal -->
+<div id="addressModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden overflow-y-auto h-full w-full"
+    style="z-index: 1200;">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white" style="width: 500px;">
+        <div class="mt-3">
+            <h3 id="modalTitle" class="text-lg font-medium leading-6 text-gray-900 mb-4">Add New Address</h3>
+            <form id="addressForm">
+                <input type="hidden" id="addressId">
+                <div class="space-y-4">
+                    <div>
+                        <input type="text" id="name" placeholder="Name" required class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <input type="tel" id="phone" placeholder="Phone" required class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <textarea id="address" placeholder="Address" required
+                            class="w-full p-2 border rounded"></textarea>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="city" placeholder="City" required class="w-full p-2 border rounded">
+                        <input type="text" id="district" placeholder="District" required
+                            class="w-full p-2 border rounded">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <input type="text" id="state" placeholder="State" required class="w-full p-2 border rounded">
+                        <input type="text" id="country" placeholder="Country" required
+                            class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <input type="text" id="postalCode" placeholder="Postal Code" required
+                            class="w-full p-2 border rounded">
+                    </div>
+                    <div>
+                        <select id="addressType" required class="w-full p-2 border rounded">
+                            <option value="">Select Address Type</option>
+                            <option value="home">Home</option>
+                            <option value="work">Work</option>
+                            <option value="other">Other</option>
+                        </select>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="isDefault" class="mr-2">
+                        <label for="isDefault">Set as default address</label>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end space-x-3">
+                    <button type="button" id="cancelBtn" class="px-4 py-2 bg-gray-200 text-gray-800 rounded">
+                        Cancel
+                    </button>
+                    <button type="submit" class="px-4 py-2 bg-blue-500 text-white rounded">
+                        Save
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('addressModal');
+    const addBtn = document.getElementById('addAddressBtn');
+    const form = document.getElementById('addressForm');
+    const cancelBtn = document.getElementById('cancelBtn');
+    const modalTitle = document.getElementById('modalTitle');
+
+    // Add required fields message container
+    const requiredMessage = document.createElement('div');
+    requiredMessage.id = 'requiredFieldsMessage';
+    requiredMessage.className = 'text-red-500 text-sm mb-4 hidden';
+    requiredMessage.textContent = '* All fields are required';
+    form.insertBefore(requiredMessage, form.firstChild);
+
+    // Validation rules with trim() to handle whitespace
+    const validations = {
+        name: {
+            rule: (value) => value.trim().length >= 3 && /^[a-zA-Z\s]+$/.test(value.trim()),
+            message: 'Name must be at least 3 characters and contain only letters'
+        },
+        phone: {
+            rule: (value) => /^\d{10}$/.test(value.trim()),
+            message: 'Phone number must be 10 digits'
+        },
+        address: {
+            rule: (value) => value.trim().length >= 10,
+            message: 'Address must be at least 10 characters'
+        },
+        city: {
+            rule: (value) => value.trim().length >= 3 && /^[a-zA-Z\s]+$/.test(value.trim()),
+            message: 'City must be at least 3 characters and contain only letters'
+        },
+        district: {
+            rule: (value) => value.trim().length >= 3 && /^[a-zA-Z\s]+$/.test(value.trim()),
+            message: 'District must be at least 3 characters and contain only letters'
+        },
+        state: {
+            rule: (value) => value.trim().length >= 2 && /^[a-zA-Z\s]+$/.test(value.trim()),
+            message: 'State must be at least 2 characters and contain only letters'
+        },
+        country: {
+            rule: (value) => value.trim().length >= 2 && /^[a-zA-Z\s]+$/.test(value.trim()),
+            message: 'Country must be at least 2 characters and contain only letters'
+        },
+        postalCode: {
+            rule: (value) => /^\d{6}$/.test(value.trim()),
+            message: 'Postal code must be 6 digits'
+        },
+        addressType: {
+            rule: (value) => value !== '',
+            message: 'Please select an address type'
+        }
+    };
+
+    // Check if any field is empty
+    const checkEmptyFields = () => {
+        let hasEmptyFields = false;
+        Object.keys(validations).forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            if (!input.value.trim()) {
+                hasEmptyFields = true;
+                input.classList.add('border-red-500');
+            }
+        });
+        
+        const requiredMsg = document.getElementById('requiredFieldsMessage');
+        if (hasEmptyFields) {
+            requiredMsg.classList.remove('hidden');
+        } else {
+            requiredMsg.classList.add('hidden');
+        }
+        return hasEmptyFields;
+    };
+
+    // Real-time validation logic
+    Object.keys(validations).forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'text-red-500 text-sm mt-1 hidden';
+        input.parentNode.insertBefore(errorDiv, input.nextSibling);
+        
+        // Remove the 'required' attribute to prevent browser's default validation
+        input.removeAttribute('required');
+        
+        const validateField = () => {
+            const value = input.value.trim();
+            const validation = validations[fieldId];
+            
+            if (!validation.rule(value)) {
+                errorDiv.textContent = validation.message;
+                errorDiv.classList.remove('hidden');
+                input.classList.add('border-red-500');
+            } else {
+                errorDiv.classList.add('hidden');
+                input.classList.remove('border-red-500');
+            }
+        };
+
+        // Use 'input' event for text fields and 'change' for select
+        const eventType = input.tagName.toLowerCase() === 'select' ? 'change' : 'input';
+        input.addEventListener(eventType, validateField);
+    });
+
+    function showModal() {
+        modal.classList.remove('hidden');
+        document.getElementById('requiredFieldsMessage').classList.add('hidden');
+    }
+
+    function hideModal() {
+        modal.classList.add('hidden');
+        form.reset();
+        document.getElementById('addressId').value = '';
+        // Clear all validation states
+        Object.keys(validations).forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            input.classList.remove('border-red-500');
+            const errorDiv = input.nextSibling;
+            if (errorDiv && errorDiv.classList.contains('text-red-500')) {
+                errorDiv.classList.add('hidden');
+            }
+        });
+        document.getElementById('requiredFieldsMessage').classList.add('hidden');
+    }
+
+    addBtn.onclick = function () {
+        modalTitle.textContent = 'Add New Address';
+        showModal();
+    }
+
+    cancelBtn.onclick = hideModal;
+
+    window.onclick = function (event) {
+        if (event.target == modal) {
+            hideModal();
+        }
+    }
+
+    form.onsubmit = async function (e) {
+        e.preventDefault();
+
+        // Check for empty fields first
+        const hasEmptyFields = checkEmptyFields();
+        if (hasEmptyFields) {
+            return;
+        }
+
+        // Then check all validations for non-empty fields
+        let isValid = true;
+        Object.keys(validations).forEach(fieldId => {
+            const input = document.getElementById(fieldId);
+            const validation = validations[fieldId];
+            if (!validation.rule(input.value.trim())) {
+                isValid = false;
+                input.classList.add('border-red-500');
+                const errorDiv = input.nextSibling;
+                if (errorDiv && errorDiv.classList.contains('text-red-500')) {
+                    errorDiv.textContent = validation.message;
+                    errorDiv.classList.remove('hidden');
+                }
+            }
+        });
+
+        if (!isValid) {
+            return;
+        }
+
+        const addressData = {
+            name: document.getElementById('name').value.trim(),
+            phone: document.getElementById('phone').value.trim(),
+            address: document.getElementById('address').value.trim(),
+            city: document.getElementById('city').value.trim(),
+            district: document.getElementById('district').value.trim(),
+            state: document.getElementById('state').value.trim(),
+            country: document.getElementById('country').value.trim(),
+            postalCode: document.getElementById('postalCode').value.trim(),
+            addressType: document.getElementById('addressType').value,
+            isDefault: document.getElementById('isDefault').checked
+        };
+
+        const addressId = document.getElementById('addressId').value;
+
+        try {
+            if (addressId) {
+                await axios.put(`/profile/address/${addressId}`, addressData);
+            } else {
+                await axios.post('/profile/address', addressData);
+            }
+            hideModal();
+            location.reload();
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    };
+});
+function editAddress(addressId) {
+    try {
+        const addressElement = document.querySelector(`[data-address-id="${addressId}"]`);
+        const addressData = addressElement.getAttribute('data-address');
+        const address = JSON.parse(addressData);
+
+        document.getElementById('addressId').value = address._id;
+        document.getElementById('name').value = address.name;
+        document.getElementById('phone').value = address.phone;
+        document.getElementById('address').value = address.address;
+        document.getElementById('city').value = address.city;
+        document.getElementById('district').value = address.district;
+        document.getElementById('state').value = address.state;
+        document.getElementById('country').value = address.country;
+        document.getElementById('postalCode').value = address.postalCode;
+        document.getElementById('addressType').value = address.addressType;
+        document.getElementById('isDefault').checked = address.isDefault;
+
+        document.getElementById('modalTitle').textContent = 'Edit Address';
+        document.getElementById('addressModal').classList.remove('hidden');
+    } catch (error) {
+        console.error('Error:', error);
+        showNotification('Failed to load address details', 'error');
+    }
+}
+
+async function deleteAddress(addressId) {
+    try {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Yes, delete it!'
+        });
+
+        if (result.isConfirmed) {
+            const response = await axios.delete(`/profile/address/${addressId}`);
+            if (response.status === 200) {
+                const addressElement = document.getElementById(`address-${addressId}`);
+                if (addressElement) {
+                    addressElement.classList.add('fade-out');
+                    setTimeout(() => {
+                        if (addressElement.parentNode) {
+                            addressElement.parentNode.removeChild(addressElement);
+                        }
+                    }, 500);
+                } else {
+                    console.warn(`Address element with id 'address-${addressId}' not found in the DOM`);
+                    // Refresh the page to reflect the updated state
+                    location.reload();
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error deleting address:', error);
+        Swal.fire(
+            'Error!',
+            'Failed to delete address. Please try again.',
+            'error'
+        );
+    }
+}
+
+// Update the onclick handler for delete buttons
+document.querySelectorAll('.delete-address-btn').forEach(button => {
+    button.onclick = function() {
+        const addressId = this.getAttribute('data-address-id');
+        if (addressId) {
+            deleteAddress(addressId);
+        } else {
+            console.error('No address ID found for delete button');
+            Swal.fire(
+                'Error!',
+                'No address ID found. Please try again.',
+                'error'
+            );
+        }
+    };
+});
+</script>

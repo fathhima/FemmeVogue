@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify OTP</title>
+
+    <!-- Bootstrap and Font Awesome -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/user/otp.css">
+</head>
+
+<body>
+
+    <div class="otp-container">
+        <div class="otp-box">
+            <img src="/images/login/image.png" alt="OTP Image">
+            <h2>Verify with OTP</h2>
+            <span class="message-info">
+                <%= message %>
+            </span>
+            <p>Sent to <strong><%= emailId %></strong></p>
+
+            <!-- Form for OTP verification -->
+            <form id="otpForm" action="/reset-otp/verify" method="POST">
+                <div class="otp-inputs">
+                    <div>
+                        <input type="text" name="otp1" maxlength="1">
+                    </div>
+                    <div>
+                        <input type="text" name="otp2" maxlength="1">
+                    </div>
+                    <div>
+                        <input type="text" name="otp3" maxlength="1">
+                    </div>
+                    <div>
+                        <input type="text" name="otp4" maxlength="1">
+                    </div>
+                </div>
+                <div class="error-message" id="generalError"></div>
+                <p class="timer">Resend OTP in: <span id="timer">60s</span></p>
+                <button type="submit" class="btn btn-primary btn-verify">Verify</button>
+            </form>
+
+            <!-- Resend OTP Form -->
+            <form id="resendForm" action="/reset-otp/resend" method="POST">
+                <input type="hidden" name="emailId" value="abcd@gmail.com">
+                <button type="submit" class="resend-link btn btn-link" id="resendOtp" style="display: none;"
+                    disabled>Resend</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            let timerInterval;
+            const timerElement = document.getElementById('timer');
+            const resendButton = document.getElementById('resendOtp');
+            const otpInputs = document.querySelectorAll('input[name^="otp"]');
+            const generalError = document.getElementById('generalError');
+            const otpForm = document.getElementById('otpForm');
+            const resendForm = document.getElementById('resendForm');
+
+            function getTimeRemaining() {
+                const storedEndTime = localStorage.getItem('otpEndTime');
+                if (storedEndTime) {
+                    const endTime = parseInt(storedEndTime);
+                    const now = new Date().getTime();
+                    const timeRemaining = Math.round((endTime - now) / 1000);
+                    return timeRemaining > 0 ? timeRemaining : 60; // Return 60 if time has expired
+                }
+                return 60; // Always return 60 if no stored time
+            }
+
+            function setEndTime(duration) {
+                const now = new Date().getTime();
+                const endTime = now + duration * 1000;
+                localStorage.setItem('otpEndTime', endTime.toString());
+            }
+
+            function startTimer(duration) {
+                let timer = duration;
+                updateTimerDisplay(timer);
+                timerElement.parentElement.style.display = 'block';
+                resendButton.style.display = 'none';
+                resendButton.disabled = true;
+
+                timerInterval = setInterval(function () {
+                    timer--;
+                    updateTimerDisplay(timer);
+
+                    if (timer <= 0) {
+                        clearInterval(timerInterval);
+                        timerElement.parentElement.style.display = 'none';
+                        resendButton.style.display = 'inline-block';
+                        resendButton.disabled = false;
+                        localStorage.removeItem('otpEndTime');
+                    }
+                }, 1000);
+            }
+
+            function updateTimerDisplay(timer) {
+                timerElement.textContent = timer + 's';
+                localStorage.setItem('otpEndTime', (new Date().getTime() + timer * 1000).toString());
+            }
+
+            // Initialize timer
+            const initialTime = getTimeRemaining();
+            setEndTime(initialTime);
+            startTimer(initialTime);
+
+            // Handle OTP input
+            otpInputs.forEach((input, index) => {
+                input.addEventListener('input', function () {
+                    if (this.value.length === this.maxLength) {
+                        if (index < otpInputs.length - 1) {
+                            otpInputs[index + 1].focus();
+                        }
+                    }
+                });
+            });
+
+            // Handle form submission
+            otpForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+
+                let isValid = true;
+                let otp = '';
+
+                otpInputs.forEach(input => {
+                    if (input.value === '') {
+                        isValid = false;
+                    }
+                    otp += input.value;
+                });
+
+                if (!isValid) {
+                    generalError.textContent = 'Please fill in all OTP fields.';
+                    return;
+                }
+
+                console.log('OTP submitted:', otp);
+                this.submit(); // Actually submit the form
+            });
+
+            // Handle resend OTP
+            resendForm.addEventListener('submit', function (e) {
+                e.preventDefault();
+                console.log('Resending OTP...');
+                setEndTime(60);
+                startTimer(60);
+                resendButton.style.display = 'none';
+                resendButton.disabled = true;
+                timerElement.parentElement.style.display = 'block';
+                this.submit(); // Actually submit the form
+            });
+        });
+    </script>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+
+</html>

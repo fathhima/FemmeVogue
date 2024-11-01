@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<title>Product Detail</title>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<!--===============================================================================================-->
+	<link rel="icon" type="image/png" href="/images/icons/favicon.png" />
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animate/animate.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/animsition/css/animsition.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/select2/select2.min.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/daterangepicker/daterangepicker.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/slick/slick.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/MagnificPopup/magnific-popup.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/vendor/perfect-scrollbar/perfect-scrollbar.css">
+	<!--===============================================================================================-->
+	<link rel="stylesheet" type="text/css" href="/css/util.css">
+	<link rel="stylesheet" type="text/css" href="/css/main.css">
+
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
+	<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/css/select2.min.css" rel="stylesheet" />
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/select2.min.js"></script>
+
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+	<!--===============================================================================================-->
+
+</head>
+
+<body class="animsition">
+
+	<!-- Header -->
+	<%-include("partials/navbar")%>
+
+		<!-- breadcrumb -->
+		<div class="container padding-top-custom">
+			<div class="bread-crumb flex-w p-l-25 p-r-15 p-t-30 p-lr-0-lg">
+				<!-- Home Link -->
+				<a href="/" class="stext-109 cl8 hov-cl1 trans-04">
+					Home
+					<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+				</a>
+				<!-- shop link -->
+				<a href="/shop" class="stext-109 cl8 hov-cl1 trans-04">
+					Shop
+					<i class="fa fa-angle-right m-l-9 m-r-10" aria-hidden="true"></i>
+				</a>
+
+				<!-- Category Link -->
+				<a href="/product-detail/<%= Products._id %>" class="stext-109 cl8 hov-cl1 trans-04">
+					<%= category %>
+				</a>
+			</div>
+		</div>
+
+		<!-- Product Detail -->
+		<section class="sec-product-detail bg0 p-t-65 p-b-60">
+			<div class="container">
+				<div class="row">
+					<div class="col-md-6 col-lg-7 p-b-30">
+						<div class="p-l-25 p-r-30 p-lr-0-lg">
+							<div class="wrap-slick3 flex-sb flex-w">
+								<div class="wrap-slick3-dots"></div>
+								<div class="wrap-slick3-arrows flex-sb-m flex-w"></div>
+								<div class="slick3 gallery-lb">
+									<% Products.image.forEach((img, index)=> { %>
+										<div class="item-slick3" data-thumb="/<%= img %>" style="position: relative;">
+											<div class="wrap-pic-w pos-relative">
+												<div class="imageZoom" style="--zoom-url: url('/<%= img %>');">
+													<img src="/<%= img %>" alt="Product Image <%= index + 1 %>"
+														style="width: 100%; height: auto;">
+												</div>
+											</div>
+										</div>
+										<% }); %>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-6 col-lg-5 p-b-30">
+						<div class="p-r-50 p-t-5 p-lr-0-lg">
+							<h4
+								class="mtext-105 cl2 js-name-detail p-b-14 d-flex justify-content-between align-items-center">
+								<span>
+									<%= Products.brandName %>
+								</span>
+								<div class="wishlist-icon small-wishlist">
+									<i class="fa-regular fa-heart"></i>
+								</div>
+							</h4>
+
+							<!-- Price Section -->
+							<div class="price-section p-t-10">
+								<span id="originalPrice" class="mtext-106 cl2"
+									style="text-decoration: line-through;"></span>
+								<span id="productPrice" class="mtext-106 cl2 p-l-10"></span>
+
+								<!-- Offer Details Section -->
+								<div id="offerDetails" class="p-t-10" style="display: none;">
+									<span class="badge badge-success">Offer Applied!</span>
+									<div class="offer-description stext-102 cl3 p-t-5"></div>
+								</div>
+							</div>
+
+							<p class="stext-102 cl3 p-t-23">
+								<%= Products.description %>
+							</p>
+
+							<!-- Size Selector -->
+							<div class="p-t-33">
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">Size</div>
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select id="sizeSelect" class="js-select2" name="size">
+												<option value="" selected disabled>Choose an option</option>
+												<% uniqueSizes.forEach(size=> { %>
+													<option value="<%= size %>">
+														<%= size %>
+													</option>
+													<% }); %>
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+
+								<!-- Color Selector -->
+								<div class="flex-w flex-r-m p-b-10">
+									<div class="size-203 flex-c-m respon6">Color</div>
+									<div class="size-204 respon6-next">
+										<div class="rs1-select2 bor8 bg0">
+											<select id="colorSelect" class="js-select2" name="color">
+												<option value="" selected disabled>Choose an option</option>
+												<option value="red">Red</option>
+												<option value="blue">Blue</option>
+												<option value="green">Green</option>
+											</select>
+											<div class="dropDownSelect2"></div>
+										</div>
+									</div>
+								</div>
+
+								<div class="d-flex justify-content-center align-items-center">
+									<div class="wrap-num-product flex-w m-r-20 m-tb-10">
+										<div class="btn-num-product-down cl8 hov-btn3 trans-04 flex-c-m">
+											<i class="fs-16 zmdi zmdi-minus"></i>
+										</div>
+
+										<input class="mtext-104 cl3 txt-center num-product" type="number"
+											name="num-product" value="1">
+
+										<div class="btn-num-product-up cl8 hov-btn3 trans-04 flex-c-m">
+											<i class="fs-16 zmdi zmdi-plus"></i>
+										</div>
+									</div>
+								</div>
+
+								<!-- Stock and Add to Cart Button -->
+								<div class="flex-w flex-r-m p-b-10 mt-3">
+									<div class="size-204 d-flex flex-column align-items-center respon6-next">
+										<div class="flex-w m-r-20 m-tb-10">
+											<span style="color: red;" id="stockMessage"></span>
+										</div>
+										<button id="addToCartBtn"
+											class="flex-c-m stext-101 cl0 size-101 bg1 bor1 hov-btn1 trans-04 js-addcart-detail">
+											Add to Cart
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+					<div class="bor10 m-t-50 p-t-43 p-b-40">
+						<!-- Tab01 -->
+						<div class="tab01">
+							<!-- Nav tabs -->
+							<ul class="nav nav-tabs" role="tablist">
+								<li class="nav-item p-b-10">
+									<a class="nav-link active" data-toggle="tab" href="#description"
+										role="tab">Description</a>
+								</li>
+
+								<li class="nav-item p-b-10">
+									<a class="nav-link" data-toggle="tab" href="#information" role="tab">Additional
+										information</a>
+								</li>
+
+								<li class="nav-item p-b-10">
+									<a class="nav-link" data-toggle="tab" href="#reviews" role="tab">Reviews (1)</a>
+								</li>
+							</ul>
+
+							<!-- Tab panes -->
+							<div class="tab-content p-t-43">
+								<!-- - -->
+								<div class="tab-pane fade show active" id="description" role="tabpanel">
+									<div class="how-pos2 p-lr-15-md">
+										<p class="stext-102 cl6">
+											Aenean sit amet gravida nisi. Nam fermentum est felis, quis feugiat nunc
+											fringilla
+											sit amet. Ut in blandit ipsum. Quisque luctus dui at ante aliquet, in
+											hendrerit
+											lectus interdum. Morbi elementum sapien rhoncus pretium maximus. Nulla
+											lectus enim,
+											cursus et elementum sed, sodales vitae eros. Ut ex quam, porta consequat
+											interdum
+											in, faucibus eu velit. Quisque rhoncus ex ac libero varius molestie. Aenean
+											tempor
+											sit amet orci nec iaculis. Cras sit amet nulla libero. Curabitur dignissim,
+											nunc nec
+											laoreet consequat, purus nunc porta lacus, vel efficitur tellus augue in
+											ipsum. Cras
+											in arcu sed metus rutrum iaculis. Nulla non tempor erat. Duis in egestas
+											nunc.
+										</p>
+									</div>
+								</div>
+
+								<!-- - -->
+								<div class="tab-pane fade" id="information" role="tabpanel">
+									<div class="row">
+										<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+											<ul class="p-lr-28 p-lr-15-sm">
+												<li class="flex-w flex-t p-b-7">
+													<span class="stext-102 cl3 size-205">
+														Weight
+													</span>
+
+													<span class="stext-102 cl6 size-206">
+														0.79 kg
+													</span>
+												</li>
+
+												<li class="flex-w flex-t p-b-7">
+													<span class="stext-102 cl3 size-205">
+														Dimensions
+													</span>
+
+													<span class="stext-102 cl6 size-206">
+														110 x 33 x 100 cm
+													</span>
+												</li>
+
+												<li class="flex-w flex-t p-b-7">
+													<span class="stext-102 cl3 size-205">
+														Materials
+													</span>
+
+													<span class="stext-102 cl6 size-206">
+														60% cotton
+													</span>
+												</li>
+
+												<li class="flex-w flex-t p-b-7">
+													<span class="stext-102 cl3 size-205">
+														Color
+													</span>
+
+													<span class="stext-102 cl6 size-206">
+														Black, Blue, Grey, Green, Red, White
+													</span>
+												</li>
+
+												<li class="flex-w flex-t p-b-7">
+													<span class="stext-102 cl3 size-205">
+														Size
+													</span>
+
+													<span class="stext-102 cl6 size-206">
+														XL, L, M, S
+													</span>
+												</li>
+											</ul>
+										</div>
+									</div>
+								</div>
+
+								<!-- - -->
+								<div class="tab-pane fade" id="reviews" role="tabpanel">
+									<div class="row">
+										<div class="col-sm-10 col-md-8 col-lg-6 m-lr-auto">
+											<div class="p-b-30 m-lr-15-sm">
+												<!-- Review -->
+												<div class="flex-w flex-t p-b-68">
+													<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
+														<img src="/images/avatar-01.jpg" alt="AVATAR">
+													</div>
+
+													<div class="size-207">
+														<div class="flex-w flex-sb-m p-b-17">
+															<span class="mtext-107 cl2 p-r-20">
+																Ariana Grande
+															</span>
+
+															<span class="fs-18 cl11">
+																<i class="zmdi zmdi-star"></i>
+																<i class="zmdi zmdi-star"></i>
+																<i class="zmdi zmdi-star"></i>
+																<i class="zmdi zmdi-star"></i>
+																<i class="zmdi zmdi-star-half"></i>
+															</span>
+														</div>
+
+														<p class="stext-102 cl6">
+															Quod autem in homine praestantissimum atque optimum est, id
+															deseruit. Apud ceteros autem philosophos
+														</p>
+													</div>
+												</div>
+
+												<!-- Add review -->
+												<form class="w-full">
+													<h5 class="mtext-108 cl2 p-b-7">
+														Add a review
+													</h5>
+
+													<p class="stext-102 cl6">
+														Your email address will not be published. Required fields are
+														marked *
+													</p>
+
+													<div class="flex-w flex-m p-t-50 p-b-23">
+														<span class="stext-102 cl3 m-r-16">
+															Your Rating
+														</span>
+
+														<span class="wrap-rating fs-18 cl11 pointer">
+															<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+															<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+															<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+															<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+															<i class="item-rating pointer zmdi zmdi-star-outline"></i>
+															<input class="dis-none" type="number" name="rating">
+														</span>
+													</div>
+
+													<div class="row p-b-25">
+														<div class="col-12 p-b-5">
+															<label class="stext-102 cl3" for="review">Your
+																review</label>
+															<textarea
+																class="size-110 bor8 stext-102 cl2 p-lr-20 p-tb-10"
+																id="review" name="review"></textarea>
+														</div>
+
+														<div class="col-sm-6 p-b-5">
+															<label class="stext-102 cl3" for="name">Name</label>
+															<input class="size-111 bor8 stext-102 cl2 p-lr-20" id="name"
+																type="text" name="name">
+														</div>
+
+														<div class="col-sm-6 p-b-5">
+															<label class="stext-102 cl3" for="email">Email</label>
+															<input class="size-111 bor8 stext-102 cl2 p-lr-20"
+																id="email" type="text" name="email">
+														</div>
+													</div>
+
+													<button
+														class="flex-c-m stext-101 cl0 size-112 bg7 bor11 hov-btn3 p-lr-15 trans-04 m-b-10">
+														Submit
+													</button>
+												</form>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+		</section>
+
+		<!-- Related Products -->
+
+		<div class="p-b-45">
+			<h3 class="ltext-106 cl5 txt-center">
+				Related Products
+			</h3>
+		</div>
+
+		<div class="card-container">
+			<% relatedProducts.forEach(product=> { %>
+				<div class="card" data-category="<%= product.category.name %>">
+					<a href="/product-detail/<%= product._id%>">
+						<img src="/<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+						<!-- Adjust the property name as needed -->
+						<div class="card-content">
+							<h3 class="card-title">
+								<%= product.brandName %>
+							</h3> <!-- Adjust the property name as needed -->
+							<p class="card-description">
+								<%= product.description %>
+							</p> <!-- Add description if available -->
+							<div class="price-wishlist">
+								<p class="card-price">Rs. <%= product.price %>
+								</p>
+								<div class="wishlist-icon">
+									<i class="fa-regular fa-heart"></i> <!-- Wishlist icon -->
+								</div>
+							</div>
+						</div>
+					</a>
+				</div>
+				<% }); %>
+		</div>
+		<br>
+		<br>
+		<br>
+
+		<script>
+			document.addEventListener('DOMContentLoaded', function () {
+				const sizeSelect = document.getElementById('sizeSelect');
+				const colorSelect = document.getElementById('colorSelect');
+				const originalPriceElement = document.getElementById('originalPrice');
+				const productPrice = document.getElementById('productPrice');
+				const offerDetails = document.getElementById('offerDetails');
+				const offerDescription = offerDetails.querySelector('.offer-description');
+				const stockMessage = document.getElementById('stockMessage');
+				const addToCartBtn = document.getElementById('addToCartBtn');
+				const slickSlider = document.querySelector('.slick3');
+				const quantityInput = document.querySelector('.num-product');
+				const incrementBtn = document.querySelector('.btn-num-product-up');
+				const decrementBtn = document.querySelector('.btn-num-product-down');
+
+				// Product variants data with offers
+				let variants;
+				try {
+					const variantsJSON = '<%- JSON.stringify(variants) %>';
+					variants = JSON.parse(variantsJSON);
+				} catch (error) {
+					console.error('Error parsing variants:', error);
+				}
+
+				// Save quantity to localStorage
+				function saveQuantityToLocalStorage() {
+					localStorage.setItem('selectedQuantity', quantityInput.value);
+				}
+
+				function updateProductInfo() {
+					const selectedSize = sizeSelect.value;
+					const selectedColor = colorSelect.value;
+
+					if (selectedSize && selectedColor) {
+						const selectedVariant = variants.find(v => v.size === selectedSize && v.color === selectedColor);
+
+						if (selectedVariant) {
+							// Pricing logic with offer system
+							if (selectedVariant.hasOffer) {
+								// Original price with strikethrough
+								originalPriceElement.textContent = `Rs.${selectedVariant.originalPrice}`;
+								originalPriceElement.style.display = 'inline';
+
+								// Discounted price
+								productPrice.textContent = `Rs.${selectedVariant.finalPrice}`;
+
+								// Offer details
+								offerDetails.style.display = 'block';
+								const discountPercentage = Math.round((selectedVariant.discountAmount / selectedVariant.originalPrice) * 100);
+								offerDescription.textContent = `Save ${discountPercentage}% (Rs.${selectedVariant.discountAmount})`;
+							} else {
+								// No offer - regular pricing
+								originalPriceElement.style.display = 'none';
+								productPrice.textContent = `Rs.${selectedVariant.price}`;
+								offerDetails.style.display = 'none';
+							}
+
+							// Stock message and button logic
+							if (selectedVariant.stock > 10) {
+								stockMessage.textContent = 'In Stock';
+								addToCartBtn.textContent = 'Add to Cart';
+								addToCartBtn.disabled = false;
+							} else if (selectedVariant.stock <= 10 && selectedVariant.stock > 0) {
+								stockMessage.textContent = `Only ${selectedVariant.stock} left`;
+								addToCartBtn.textContent = 'Add to Cart';
+								addToCartBtn.disabled = false;
+							} else {
+								stockMessage.textContent = 'Out of Stock';
+								addToCartBtn.textContent = 'Out of Stock';
+								addToCartBtn.disabled = true;
+							}
+
+							// Image update logic
+							const imageIndex = ['red', 'blue', 'green'].indexOf(selectedColor.toLowerCase());
+							if (imageIndex !== -1 && slickSlider && typeof $(slickSlider).slick === 'function') {
+								$(slickSlider).slick('slickGoTo', imageIndex);
+							}
+
+							// Save selections to local storage
+							localStorage.setItem('selectedSize', selectedSize);
+							localStorage.setItem('selectedColor', selectedColor);
+						} else {
+							console.log('No matching variant found for size:', selectedSize, 'and color:', selectedColor);
+						}
+					} else {
+						console.log('Size or color not selected');
+					}
+				}
+
+				// Populate size and color dropdowns
+				function populateDropdowns() {
+					const sizes = [...new Set(variants.map(v => v.size))];
+					const colors = [...new Set(variants.map(v => v.color))];
+
+					// Clear existing options first
+					sizeSelect.innerHTML = '<option value="" selected disabled>Choose an option</option>';
+					colorSelect.innerHTML = '<option value="" selected disabled>Choose an option</option>';
+
+					sizes.forEach(size => {
+						const option = document.createElement('option');
+						option.value = size;
+						option.textContent = size;
+						sizeSelect.appendChild(option);
+					});
+
+					colors.forEach(color => {
+						const option = document.createElement('option');
+						option.value = color;
+						option.textContent = color;
+						colorSelect.appendChild(option);
+					});
+				}
+
+				// Update quantity on button clicks and save to localStorage
+				document.querySelector('.btn-num-product-up').addEventListener('click', function () {
+					quantityInput.value = parseInt(quantityInput.value) + 1;
+					saveQuantityToLocalStorage();
+				});
+
+				document.querySelector('.btn-num-product-down').addEventListener('click', function () {
+					if (parseInt(quantityInput.value) > 1) {
+						quantityInput.value = parseInt(quantityInput.value) - 1;
+						saveQuantityToLocalStorage();
+					}
+				});
+
+				// Remove any existing event listeners
+				incrementBtn.replaceWith(incrementBtn.cloneNode(true));
+				decrementBtn.replaceWith(decrementBtn.cloneNode(true));
+
+				// Get fresh references after cloning
+				const newIncrementBtn = document.querySelector('.btn-num-product-up');
+				const newDecrementBtn = document.querySelector('.btn-num-product-down');
+
+				// Add new event listeners
+				newIncrementBtn.addEventListener('click', function (e) {
+					e.stopPropagation(); // Prevent event bubbling
+					quantityInput.value = parseInt(quantityInput.value) + 1;
+					saveQuantityToLocalStorage();
+				});
+
+				newDecrementBtn.addEventListener('click', function (e) {
+					e.stopPropagation(); // Prevent event bubbling
+					if (parseInt(quantityInput.value) > 1) {
+						quantityInput.value = parseInt(quantityInput.value) - 1;
+						saveQuantityToLocalStorage();
+					}
+				});
+
+				function saveQuantityToLocalStorage() {
+					localStorage.setItem('selectedQuantity', quantityInput.value);
+				}
+
+				// Initialize page and restore selections
+				if (variants && variants.length > 0) {
+					populateDropdowns();
+
+					$(document).ready(function () {
+						// Initialize Select2
+						$('.js-select2').select2();
+
+						// Listen for Select2 change events
+						$('#sizeSelect').on('select2:select', function (e) {
+							updateProductInfo();
+						});
+
+						$('#colorSelect').on('select2:select', function (e) {
+							updateProductInfo();
+						});
+
+						// Retrieve saved selections from local storage
+						const savedSize = localStorage.getItem('selectedSize');
+						const savedColor = localStorage.getItem('selectedColor');
+						const savedQuantity = localStorage.getItem('selectedQuantity');
+
+						if (savedSize && savedColor) {
+							sizeSelect.value = savedSize;
+							colorSelect.value = savedColor;
+						} else if (variants[0]) {
+							// If no saved selections, use the first variant
+							sizeSelect.value = variants[0].size;
+							colorSelect.value = variants[0].color;
+						}
+
+						if (savedQuantity) {
+							quantityInput.value = savedQuantity;
+						}
+
+						// Trigger Select2 update
+						$(sizeSelect).trigger('change');
+						$(colorSelect).trigger('change');
+
+						// Update product info
+						updateProductInfo();
+					});
+				} else {
+					console.error('No variants data available');
+				}
+
+				addToCartBtn.addEventListener('click', async function (e) {
+					e.preventDefault();
+
+					try {
+						const selectedSize = sizeSelect.value;
+						const selectedColor = colorSelect.value;
+						const quantity = parseInt(quantityInput.value);
+
+						// Input validation
+						if (!selectedSize || !selectedColor) {
+							throw new Error('Please select size and color');
+						}
+
+						if (!quantity || quantity < 1) {
+							throw new Error('Please enter a valid quantity');
+						}
+
+						// Get the selected variant
+						const selectedVariant = variants.find(v =>
+							v.size === selectedSize && v.color === selectedColor
+						);
+
+						if (!selectedVariant) {
+							throw new Error('Selected variant not found');
+						}
+
+						if (quantity > selectedVariant.stock) {
+							throw new Error('Selected quantity is not available in stock');
+						}
+
+						// Disable button and show loading state
+						addToCartBtn.disabled = true;
+						addToCartBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Adding...';
+
+						// Make the request
+						const response = await axios.post('/add-to-cart', {
+							productId: selectedVariant.product,
+							variantId: selectedVariant._id,
+							quantity: quantity,
+							price: selectedVariant.price,
+						});
+
+						if (response.data.success) {
+							// Show success message
+							Swal.fire({
+								icon: 'success',
+								title: 'Success',
+								text: 'Product added to cart successfully!',
+								showConfirmButton: true,
+								confirmButtonText: 'View Cart',
+								showCancelButton: true,
+								cancelButtonText: 'Continue Shopping'
+							}).then((result) => {
+								if (result.isConfirmed) {
+									window.location.href = '/cart';
+								}
+							});
+
+
+							// Clear localStorage
+							localStorage.removeItem('selectedSize');
+							localStorage.removeItem('selectedColor');
+							localStorage.removeItem('selectedQuantity');
+						}
+
+					} catch (error) {
+						console.error('Error:', error);
+						Swal.fire({
+							icon: 'error',
+							title: 'Error',
+							text: error.response?.data?.message || error.message || 'An error occurred while adding to cart'
+						});
+					} finally {
+						// Reset button state
+						addToCartBtn.disabled = false;
+						addToCartBtn.innerHTML = 'Add to Cart';
+					}
+				});
+			})
+
+
+		</script>
+
+
+		<!-- Footer -->
+		<%-include("partials/footer")%>
+
+			<!-- Back to top -->
+			<div class="btn-back-to-top" id="myBtn">
+				<span class="symbol-btn-back-to-top">
+					<i class="zmdi zmdi-chevron-up"></i>
+				</span>
+			</div>
+
+			<!--===============================================================================================-->
+			<script src="/vendor/jquery/jquery-3.2.1.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/animsition/js/animsition.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/bootstrap/js/popper.js"></script>
+			<script src="/vendor/bootstrap/js/bootstrap.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/select2/select2.min.js"></script>
+			<script>
+				$(".js-select2").each(function () {
+					$(this).select2({
+						minimumResultsForSearch: 20,
+						dropdownParent: $(this).next('.dropDownSelect2')
+					});
+				})
+			</script>
+			<!--===============================================================================================-->
+			<script src="/vendor/daterangepicker/moment.min.js"></script>
+			<script src="/vendor/daterangepicker/daterangepicker.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/slick/slick.min.js"></script>
+			<script src="/js/slick-custom.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/parallax100/parallax100.js"></script>
+			<script>
+				$('.parallax100').parallax100();
+			</script>
+			<!--===============================================================================================-->
+			<script src="/vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
+			<script>
+				$('.gallery-lb').each(function () { // the containers for all your galleries
+					$(this).magnificPopup({
+						delegate: 'a', // the selector for gallery item
+						type: 'image',
+						gallery: {
+							enabled: true
+						},
+						mainClass: 'mfp-fade'
+					});
+				});
+			</script>
+			<!--===============================================================================================-->
+			<script src="/vendor/isotope/isotope.pkgd.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/sweetalert/sweetalert.min.js"></script>
+			<!--===============================================================================================-->
+			<script src="/vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+			<script>
+				$('.js-pscroll').each(function () {
+					$(this).css('position', 'relative');
+					$(this).css('overflow', 'hidden');
+					var ps = new PerfectScrollbar(this, {
+						wheelSpeed: 1,
+						scrollingThreshold: 1000,
+						wheelPropagation: false,
+					});
+
+					$(window).on('resize', function () {
+						ps.update();
+					})
+				});
+			</script>
+			<!--===============================================================================================-->
+			<script src="/js/main.js"></script>
+
+</body>
+
+</html>

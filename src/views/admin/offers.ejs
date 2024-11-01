@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - FemmeVogue</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/admin/index.css"> <!-- Custom CSS -->
+
+</head>
+
+<body>
+    <div class="d-flex" id="wrapper">
+        <!-- Sidebar -->
+        <%- include("partials/sidebar") %>
+
+            <!-- Page Content -->
+            <div id="page-content-wrapper">
+                <%- include("partials/navbar") %>
+
+                    <div class="main-content">
+                        <div class="container-fluid">
+                            <div class="row">
+                                <!-- Offer List Section -->
+                                <div class="col-12 mb-4">
+                                    <div class="card">
+                                        <div class="card-header d-flex justify-content-between align-items-center">
+                                            <h5 class="mb-0">All Offers</h5>
+
+                                            <!-- Flash Messages as Flex Row -->
+                                            <div class="d-flex gap-2 mx-3 align-items-center">
+                                                <% if (messages.success) { %>
+                                                    <div class="alert alert-success fade show mb-0 p-1" role="alert">
+                                                        <%= messages.success %>
+                                                    </div>
+                                                    <% } %>
+                                                        <% if (messages.error) { %>
+                                                            <div class="alert alert-danger fade show mb-0 p-1"
+                                                                role="alert">
+                                                                <%= messages.error %>
+                                                            </div>
+                                                            <% } %>
+                                            </div>
+
+                                            <button class="btn btn-primary btn-sm" data-bs-toggle="collapse"
+                                                data-bs-target="#createOfferForm">
+                                                <i class="fas fa-plus"></i> Create New Offer
+                                            </button>
+                                        </div>
+                                        <div class="card-body">
+                                            <!-- Create Offer Form -->
+                                            <div class="collapse mb-4" id="createOfferForm">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <form id="offerForm" onsubmit="handleOfferSubmission(event)">
+                                                            <div class="row g-3">
+                                                                <!-- Basic Info -->
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Offer Name</label>
+                                                                    <input type="text" class="form-control" name="name"
+                                                                        required>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Offer Type</label>
+                                                                    <select class="form-select" name="type"
+                                                                        onchange="handleOfferTypeChange()" required>
+                                                                        <option value="">Select Type</option>
+                                                                        <option value="product">Product Offer</option>
+                                                                        <option value="category">Category Offer</option>
+                                                                        <option value="referral">Referral Offer</option>
+                                                                    </select>
+                                                                </div>
+
+                                                                <!-- Dynamic Selection Based on Type -->
+                                                                <div class="col-md-12" id="productSelection"
+                                                                    style="display: none;">
+                                                                    <label class="form-label">Select Product</label>
+                                                                    <select class="form-select" name="applicableFor">
+                                                                        <option value="">Select Product</option>
+                                                                        <% if (locals.products && products.length> 0) {
+                                                                            %>
+                                                                            <% products.forEach(product=> { %>
+                                                                                <option value="<%= product._id %>">
+                                                                                    <%= product.brandName %>
+                                                                                </option>
+                                                                                <% }); %>
+                                                                                    <% } %>
+                                                                    </select>
+                                                                </div>
+
+                                                                <div class="col-md-12" id="categorySelection"
+                                                                    style="display: none;">
+                                                                    <label class="form-label">Select Category</label>
+                                                                    <select class="form-select" name="applicableFor">
+                                                                        <option value="">Select Category</option>
+                                                                        <% if (locals.categories && categories.length>
+                                                                            0) { %>
+                                                                            <% categories.forEach(category=> { %>
+                                                                                <option value="<%= category._id %>">
+                                                                                    <%= category.name %>
+                                                                                </option>
+                                                                                <% }); %>
+                                                                                    <% } %>
+                                                                    </select>
+                                                                </div>
+
+                                                                <!-- Referral Benefits -->
+                                                                <div class="col-12" id="referralBenefits"
+                                                                    style="display: none;">
+                                                                    <div class="row g-3">
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Referrer Benefit
+                                                                                (₹)</label>
+                                                                            <input type="number" class="form-control"
+                                                                                name="referralBenefit[referrer]"
+                                                                                min="0">
+                                                                        </div>
+                                                                        <div class="col-md-6">
+                                                                            <label class="form-label">Referee Benefit
+                                                                                (₹)</label>
+                                                                            <input type="number" class="form-control"
+                                                                                name="referralBenefit[referee]" min="0">
+                                                                        </div>
+                                                                    </div>
+                                                                </div>
+
+                                                                <!-- Discount Details -->
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Discount Type</label>
+                                                                    <select class="form-select" name="discountType"
+                                                                        required>
+                                                                        <option value="percentage">Percentage</option>
+                                                                        <option value="fixed">Fixed Amount</option>
+                                                                    </select>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Discount Value</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="discountValue" required min="0">
+                                                                </div>
+
+                                                                <!-- Purchase Limits -->
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Minimum Purchase
+                                                                        Amount</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="minPurchaseAmount" min="0">
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Maximum Discount
+                                                                        Amount</label>
+                                                                    <input type="number" class="form-control"
+                                                                        name="maxDiscountAmount" min="0">
+                                                                </div>
+
+                                                                <!-- Date Range -->
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">Start Date</label>
+                                                                    <input type="date" class="form-control"
+                                                                        name="startDate" required>
+                                                                </div>
+                                                                <div class="col-md-6">
+                                                                    <label class="form-label">End Date</label>
+                                                                    <input type="date" class="form-control"
+                                                                        name="endDate" required>
+                                                                </div>
+
+                                                                <div class="col-12">
+                                                                    <button type="submit" class="btn btn-primary">Create
+                                                                        Offer</button>
+                                                                    <button type="button" class="btn btn-secondary"
+                                                                        data-bs-toggle="collapse"
+                                                                        data-bs-target="#createOfferForm">Cancel</button>
+                                                                </div>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Offers Table -->
+                                            <div class="table-responsive">
+                                                <table class="table table-striped" id="offersTable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th>
+                                                            <th>Type</th>
+                                                            <th>Discount</th>
+                                                            <th>Valid Period</th>
+                                                            <th>Min Purchase</th>
+                                                            <th>Max Discount</th>
+                                                            <th>Status</th>
+                                                            <th>Actions</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <% if (offers && offers.length> 0) { %>
+                                                            <% offers.forEach(offer=> { %>
+                                                                <tr data-offer-id="<%= offer._id %>">
+                                                                    <td>
+                                                                        <%= offer.name %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= offer.type %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= offer.discountValue %>
+                                                                            <%= offer.discountType==='percentage' ? '%'
+                                                                                : '₹' %>
+                                                                    </td>
+                                                                    <td>
+                                                                        <%= new
+                                                                            Date(offer.startDate).toLocaleDateString()
+                                                                            %> -
+                                                                            <%= new
+                                                                                Date(offer.endDate).toLocaleDateString()
+                                                                                %>
+                                                                    </td>
+                                                                    <td>₹<%= offer.minPurchaseAmount %>
+                                                                    </td>
+                                                                    <td>₹<%= offer.maxDiscountAmount || '-' %>
+                                                                    </td>
+                                                                    <td >
+                                                                        <div class="form-check form-switch">
+                                                                            <input type="checkbox"
+                                                                                class="form-check-input"
+                                                                                <%=offer.isActive ? 'checked' : '' %>
+                                                                            onchange="updateOfferStatus(this)"
+                                                                            data-offer-id="<%= offer._id %>">
+                                                                        </div>
+                                                                    </td>
+                                                                    <td>
+                                                                        <button class="btn btn-sm btn-primary me-2"
+                                                                            onclick="editOffer('<%= offer._id %>')">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </button>
+                                                                        <button class="btn btn-sm btn-danger"
+                                                                            onclick="deleteOffer('<%= offer._id %>')">
+                                                                            <i class="fas fa-trash"></i>
+                                                                        </button>
+                                                                    </td>
+                                                                </tr>
+                                                                <% }); %>
+                                                                    <% } else { %>
+                                                                        <tr>
+                                                                            <td colspan="8" class="text-center">No
+                                                                                offers found</td>
+                                                                        </tr>
+                                                                        <% } %>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            initializeDateInputs();
+            initializeDataTable();
+        });
+
+        function initializeDateInputs() {
+            const startDateInput = document.querySelector('input[name="startDate"]');
+            const endDateInput = document.querySelector('input[name="endDate"]');
+
+            if (startDateInput && endDateInput) {
+                const today = new Date();
+                const nextMonth = new Date(today);
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+
+                startDateInput.min = today.toISOString().split('T')[0];
+                startDateInput.value = today.toISOString().split('T')[0];
+                endDateInput.value = nextMonth.toISOString().split('T')[0];
+            }
+        }
+
+        function handleOfferTypeChange() {
+            const offerType = document.querySelector('select[name="type"]').value;
+            const sections = {
+                product: document.getElementById('productSelection'),
+                category: document.getElementById('categorySelection'),
+                referral: document.getElementById('referralBenefits')
+            };
+
+            // Hide all sections and disable their inputs
+            Object.values(sections).forEach(section => {
+                if (section) {
+                    section.style.display = 'none';
+                    // Disable all inputs/selects in hidden sections
+                    section.querySelectorAll('input, select').forEach(input => {
+                        input.disabled = true;
+                        input.required = false;
+                    });
+                }
+            });
+
+            // Show selected section and enable its inputs
+            if (sections[offerType]) {
+                sections[offerType].style.display = 'block';
+                // Enable and set required for visible section
+                sections[offerType].querySelectorAll('input, select').forEach(input => {
+                    input.disabled = false;
+                    input.required = (offerType === 'product' || offerType === 'category');
+                });
+            }
+
+            // Special handling for referral type
+            if (offerType === 'referral') {
+                const referralInputs = document.querySelectorAll('#referralBenefits input');
+                referralInputs.forEach(input => {
+                    input.disabled = false;
+                    input.required = true;
+                });
+            }
+        }
+
+        function validateOfferForm(form) {
+            const offerType = form.querySelector('select[name="type"]').value;
+
+            // Only validate visible and enabled fields
+            const visibleSection = document.querySelector(`#${offerType}Selection`);
+            if (visibleSection) {
+                const requiredFields = visibleSection.querySelectorAll('input[required]:not([disabled]), select[required]:not([disabled])');
+
+                for (const field of requiredFields) {
+                    if (!field.value) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Validation Error',
+                            text: `Please fill in all required fields for ${offerType} offer`
+                        });
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        async function handleOfferSubmission(event) {
+            event.preventDefault();
+            const form = event.target;
+            const submitButton = form.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            try {
+                if (!validateOfferForm(form)) {
+                    submitButton.disabled = false;
+                    return;
+                }
+
+                const formData = new FormData(form);
+                const data = {};
+
+                // Get the offer type
+                const offerType = formData.get('type');
+
+                // Get the correct applicableFor value based on visible section
+                const visibleSection = document.querySelector(`#${offerType}Selection select[name="applicableFor"]`);
+                if (visibleSection && !visibleSection.disabled) {
+                    data.applicableFor = visibleSection.value;
+                }
+
+                // Add other form data
+                for (const [key, value] of formData.entries()) {
+                    if (key !== 'applicableFor') { // Skip the hidden applicableFor fields
+                        data[key] = value;
+                    }
+                }
+
+                // Format the data
+                const offerData = {
+                    ...data,
+                    startDate: new Date(data.startDate).toISOString(),
+                    endDate: new Date(data.endDate).toISOString(),
+                    discountValue: parseFloat(data.discountValue),
+                    minPurchaseAmount: parseFloat(data.minPurchaseAmount) || 0,
+                    maxDiscountAmount: parseFloat(data.maxDiscountAmount) || null,
+                    applicableFor: data.applicableFor // Make sure this is included
+                };
+
+                const response = await axios.post('/admin/offer/create', offerData);
+
+                if (response.data.success) {
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Success!',
+                        text: 'Offer created successfully',
+                        showConfirmButton: false,
+                        timer: 1500
+                    }).then(() => {
+                        window.location.href = '/admin/offer'; // Direct to offers list
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.response?.data?.message || 'Failed to create offer',
+                });
+            } finally {
+                submitButton.disabled = false;
+            }
+        }
+
+        async function editOffer(offerId) {
+            try {
+                console.log(offerId)
+                // Fetch offer details
+                const response = await axios.get(`/admin/offer/${offerId}`);
+                const offer = response.data.offer;
+
+                // Show edit form with pre-filled data
+                const editFormHtml = `
+            <form id="editOfferForm" class="needs-validation">
+                <div class="row g-3">
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Offer Name</label>
+                        <input type="text" class="form-control" name="name" value="${offer.name}" required>
+                    </div>
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Offer Type</label>
+                        <input type="text" class="form-control" value="${offer.type}" readonly>
+                        <input type="hidden" name="type" value="${offer.type}">
+                    </div>
+
+                    ${offer.type !== 'referral' ? `
+                        <div class="col-md-12" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                            <label class="form-label">Select ${offer.type}</label>
+                            <select class="form-select" name="applicableFor" required>
+                                ${offer.type === 'product' ? window.products.map(p =>
+                    `<option value="${p._id}" ${p._id === offer.applicableFor ? 'selected' : ''}>${p.brandName}</option>`
+                ).join('') : ''}
+                                ${offer.type === 'category' ? window.categories.map(c =>
+                    `<option value="${c._id}" ${c._id === offer.applicableFor ? 'selected' : ''}>${c.name}</option>`
+                ).join('') : ''}
+                            </select>
+                        </div>
+                    ` : ''}
+
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Discount Type</label>
+                        <select class="form-select" name="discountType" required>
+                            <option value="percentage" ${offer.discountType === 'percentage' ? 'selected' : ''}>Percentage</option>
+                            <option value="fixed" ${offer.discountType === 'fixed' ? 'selected' : ''}>Fixed Amount</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Discount Value</label>
+                        <input type="number" class="form-control" name="discountValue" value="${offer.discountValue}" required min="0">
+                    </div>
+
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Minimum Purchase Amount</label>
+                        <input type="number" class="form-control" name="minPurchaseAmount" value="${offer.minPurchaseAmount || 0}" min="0">
+                    </div>
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Maximum Discount Amount</label>
+                        <input type="number" class="form-control" name="maxDiscountAmount" value="${offer.maxDiscountAmount || ''}" min="0">
+                    </div>
+
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control" name="startDate" value="${new Date(offer.startDate).toISOString().split('T')[0]}" required>
+                    </div>
+                    <div class="col-md-6" style="display: flex;flex-direction: column;/* justify-content: start; */align-items: start;">
+                        <label class="form-label">End Date</label>
+                        <input type="date" class="form-control" name="endDate" value="${new Date(offer.endDate).toISOString().split('T')[0]}" required>
+                    </div>
+                </div>
+            </form>
+        `;
+
+                const result = await Swal.fire({
+                    title: 'Edit Offer',
+                    html: editFormHtml,
+                    showCancelButton: true,
+                    confirmButtonText: 'Save Changes',
+                    cancelButtonText: 'Cancel',
+                    width: '800px',
+                    preConfirm: () => {
+                        const form = document.getElementById('editOfferForm');
+                        const formData = new FormData(form);
+                        const data = {};
+                        formData.forEach((value, key) => {
+                            data[key] = value;
+                        });
+                        return data;
+                    }
+                });
+
+                if (result.isConfirmed) {
+                    const updatedData = result.value;
+                    const updateResponse = await axios.put(`/admin/offer/${offerId}`, updatedData);
+
+                    if (updateResponse.data.success) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Success!',
+                            text: 'Offer updated successfully',
+                            showConfirmButton: false,
+                            timer: 1500
+                        }).then(() => {
+                            window.location.reload();
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error!',
+                    text: error.response?.data?.message || 'Failed to update offer'
+                });
+            }
+        }
+
+        async function updateOfferStatus(element) {
+            const offerId = element.dataset.offerId;
+            const isActive = element.checked;
+
+            try {
+                console.log(isActive)
+                await axios.patch(`/admin/offer/${offerId}/status`, { isActive });
+                showToast('success', 'Offer status updated successfully');
+            } catch (error) {
+                console.error('Error:', error);
+                element.checked = !isActive; // Revert the checkbox
+                showToast('error', 'Failed to update offer status');
+            }
+        }
+
+        async function deleteOffer(offerId) {
+            const result = await Swal.fire({
+                title: 'Are you sure?',
+                text: "This action cannot be undone",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',
+                cancelButtonColor: '#3085d6',
+                confirmButtonText: 'Yes, delete it!'
+            });
+
+            if (result.isConfirmed) {
+                try {
+                    await axios.delete(`/admin/offer/${offerId}`);
+                    const row = document.querySelector(`tr[data-offer-id="${offerId}"]`);
+                    if (row) {
+                        row.remove();
+                    }
+                    showToast('success', 'Offer deleted successfully');
+                } catch (error) {
+                    console.error('Error:', error);
+                    showToast('error', 'Failed to delete offer');
+                }
+            }
+        }
+
+        function initializeDataTable() {
+            if ($.fn.DataTable && document.getElementById('offersTable')) {
+                $('#offersTable').DataTable({
+                    order: [[0, 'desc']],
+                    pageLength: 10,
+                    responsive: true,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copy', 'csv', 'excel', 'pdf', 'print'
+                    ]
+                });
+            }
+        }
+
+        function showToast(icon, title) {
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                didOpen: (toast) => {
+                    toast.addEventListener('mouseenter', Swal.stopTimer);
+                    toast.addEventListener('mouseleave', Swal.resumeTimer);
+                }
+            });
+
+            Toast.fire({
+                icon,
+                title
+            });
+        }
+    </script>
+</body>
+
+</html>

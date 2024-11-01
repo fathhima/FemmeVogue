@@ -1,0 +1,251 @@
+<div class="bg-white shadow-md rounded p-4">
+    <h2 class="text-2xl font-bold mb-4">Profile</h2>
+    <form id="profileForm" class="profile-form">
+        <div class="mb-4">
+            <label for="firstName" class="block mb-2">First Name</label>
+            <input type="text" id="firstName" name="firstName" value="<%= user.firstName %>"
+                class="w-full p-2 border rounded">
+        </div>
+        <div class="mb-4">
+            <label for="lastName" class="block mb-2">Last Name</label>
+            <input type="text" id="lastName" name="lastName" value="<%= user.lastName %>"
+                class="w-full p-2 border rounded">
+        </div>
+        <div class="mb-4">
+            <label for="email" class="block mb-2">Email</label>
+            <input type="email" id="email" name="email" value="<%= user.emailId %>"
+                class="w-full p-2 border rounded bg-gray-100" readonly>
+        </div>
+        <div class="mb-4">
+            <label for="phone" class="block mb-2">Phone Number</label>
+            <input type="tel" id="phone" name="phone" value="<%= user.phone %>" class="w-full p-2 border rounded">
+        </div>
+
+        <!-- Alert Message Container -->
+        <div id="alertMessage" class="mb-4 hidden">
+            <div class="p-4 rounded text-sm"></div>
+        </div>
+
+        <!-- Flexbox container for aligning both buttons -->
+        <div class="flex justify-between items-center">
+            <!-- Change Password Button with same size -->
+            <button id="changePasswordBtn" type="button"
+                class="bg-gray-500 text-white px-4 py-2 text-sm rounded hover:bg-gray-600">
+                Change Password
+            </button>
+            <!-- Update Profile Button with same size as Change Password -->
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 text-sm rounded hover:bg-blue-600">
+                Update Profile
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Modal Structure for Change Password -->
+<div id="changePasswordModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center">
+    <div class="relative bg-white rounded-lg p-6 w-96">
+        <!-- Close button with cross -->
+        <button id="closeModalBtn" class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-2xl">
+            &times; <!-- Cross icon -->
+        </button>
+
+        <h3 class="text-xl font-bold mb-4">Change Password</h3>
+        <form action="/change-password" method="POST">
+            <div class="mb-4">
+                <label for="currentPassword" class="block mb-2">Current Password</label>
+                <input type="password" id="currentPassword" name="currentPassword" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label for="newPassword" class="block mb-2">New Password</label>
+                <input type="password" id="newPassword" name="newPassword" class="w-full p-2 border rounded">
+            </div>
+            <div class="mb-4">
+                <label for="confirmPassword" class="block mb-2">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" class="w-full p-2 border rounded">
+            </div>
+            <button type="submit" class="bg-blue-500 text-white px-4 py-2 text-sm rounded hover:bg-blue-600">
+                Update Password
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- Script to Handle Modal -->
+
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+
+    document.getElementById('profileForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const alertDiv = document.getElementById('alertMessage');
+        const alertContent = alertDiv.querySelector('div');
+
+        try {
+            // Get form data
+            const formData = {
+                firstName: document.getElementById('firstName').value.trim(),
+                lastName: document.getElementById('lastName').value.trim(),
+                phone: document.getElementById('phone').value.trim()
+            };
+
+            // Validate form data
+            if (!formData.firstName || !formData.lastName || !formData.phone) {
+                showAlert('Please fill in all required fields', 'error');
+                return;
+            }
+
+            // Validate phone number (assuming 10 digits)
+            const phoneRegex = /^\d{10}$/;
+            if (!phoneRegex.test(formData.phone)) {
+                showAlert('Please enter a valid 10-digit phone number', 'error');
+                return;
+            }
+
+            // Send update request using Axios
+            const response = await axios.post('/profile/update', formData);
+            console.log(response);
+
+            if (response.data.success) {
+                showAlert('Profile updated successfully', 'success');
+                // Reload page after successful update
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showAlert(response.data.message || 'Failed to update profile', 'error');
+            }
+
+        } catch (err) {
+            console.error(err);
+            showAlert(err.response?.data?.message || 'Something went wrong. Please try again.', 'error');
+        }
+    });
+
+    function showAlert(message, type) {
+        const alertDiv = document.getElementById('alertMessage');
+        const alertContent = alertDiv.querySelector('div');
+
+        // Remove existing classes
+        alertContent.classList.remove('bg-green-100', 'text-green-700', 'bg-red-100', 'text-red-700');
+
+        // Add appropriate classes based on type
+        if (type === 'success') {
+            alertContent.classList.add('bg-green-100', 'text-green-700');
+        } else {
+            alertContent.classList.add('bg-red-100', 'text-red-700');
+        }
+
+        // Set message and show alert
+        alertContent.textContent = message;
+        alertDiv.classList.remove('hidden');
+
+        // Hide alert after 3 seconds
+        setTimeout(() => {
+            alertDiv.classList.add('hidden');
+        }, 3000);
+    }
+
+    // Disable form submission on enter key
+    document.getElementById('profileForm').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+        }
+    });
+
+    const changePasswordBtn = document.getElementById('changePasswordBtn');
+    const changePasswordModal = document.getElementById('changePasswordModal');
+    const closeModalBtn = document.getElementById('closeModalBtn');
+
+    changePasswordBtn.addEventListener('click', () => {
+        changePasswordModal.classList.remove('hidden');
+    });
+
+    closeModalBtn.addEventListener('click', () => {
+        changePasswordModal.classList.add('hidden');
+    });
+
+    document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        const response = await axios.get('/profile/show-googleIdUser-password');
+        const user = response.data;
+
+        if (user.googleId) {
+            const currentPasswordInput = document.getElementById('currentPassword');
+            currentPasswordInput.value = user.password;
+            currentPasswordInput.readOnly = true;
+            
+            // Create show/hide password button
+            const toggleButton = document.createElement('button');
+            toggleButton.type = 'button';
+            toggleButton.innerHTML = '👁️'; // Eye icon
+            toggleButton.className = 'absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700';
+            
+            // Add button to password input container
+            const inputContainer = currentPasswordInput.parentElement;
+            inputContainer.style.position = 'relative';
+            inputContainer.appendChild(toggleButton);
+
+            // Toggle password visibility
+            toggleButton.onclick = function() {
+                if (currentPasswordInput.type === 'password') {
+                    currentPasswordInput.type = 'text';  // Show password
+                    toggleButton.innerHTML = '👁️‍🗨️';  // Changed eye icon
+                } else {
+                    currentPasswordInput.type = 'password';  // Hide password
+                    toggleButton.innerHTML = '👁️';  // Original eye icon
+                }
+            };
+        }
+    } catch (error) {
+        console.error('Error fetching user info:', error);
+    }
+});
+
+    document.getElementById('changePasswordModal').querySelector('form').addEventListener('submit', async function (e) {
+        e.preventDefault();
+
+        const currentPassword = document.getElementById('currentPassword').value;
+        const newPassword = document.getElementById('newPassword').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // Basic validation
+        if (!newPassword || !confirmPassword) {
+            showAlert('Please fill in all password fields', 'error');
+            return;
+        }
+
+        if (newPassword !== confirmPassword) {
+            showAlert('New passwords do not match', 'error');
+            return;
+        }
+
+        // Password strength validation
+        const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
+        if (!passwordRegex.test(newPassword)) {
+            showAlert('Password must be at least 8 characters long and contain both letters and numbers', 'error');
+            return;
+        }
+
+        try {
+            const response = await axios.post('/profile/change-password', {
+                currentPassword,
+                newPassword
+            });
+
+            if (response.data.success) {
+                showAlert('Password updated successfully', 'success');
+                changePasswordModal.classList.add('hidden');
+                // Clear form except current password for Google users
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmPassword').value = '';
+            } else {
+                showAlert(response.data.message, 'error');
+            }
+        } catch (err) {
+            console.error(err);
+            showAlert(err.response?.data?.message || 'Failed to update password', 'error');
+        }
+    });
+</script>
