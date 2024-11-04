@@ -206,6 +206,7 @@
 
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+            <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
             <script>
 
                 document.addEventListener('DOMContentLoaded', function () {
@@ -305,7 +306,6 @@
                                             Swal.showLoading();
                                         }
                                     });
-
                                     // Get shipping address
                                     const addressData = JSON.parse(sessionStorage.getItem('selectedAddress'));
                                     if (!addressData) {
@@ -321,6 +321,7 @@
                                         throw new Error('Invalid Razorpay order response');
                                     }
 
+                                    console.log(orderResponse.data)
                                     // Initialize Razorpay payment
                                     const options = {
                                         key: orderResponse.data.key_id,
@@ -335,7 +336,8 @@
                                                 const verifyResponse = await axios.post('/checkout/verify-razorpay-payment', {
                                                     razorpay_order_id: response.razorpay_order_id,
                                                     razorpay_payment_id: response.razorpay_payment_id,
-                                                    razorpay_signature: response.razorpay_signature
+                                                    razorpay_signature: response.razorpay_signature,
+                                                    orderId: orderResponse.data.orderId
                                                 });
 
                                                 if (verifyResponse.data.orderId) {

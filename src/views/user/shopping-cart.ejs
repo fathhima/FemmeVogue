@@ -81,14 +81,14 @@
 												<!-- Product Image -->
 												<td class="column-1">
 													<div class="how-itemcart1">
-														<% const colorOrder=['red', 'blue' , 'green','white' ]; const
+														<% const colorOrder=['red', 'blue' , 'green','white']; const
 															selectedColor=item.variantId.color.toLowerCase(); const
 															colorIndex=colorOrder.indexOf(selectedColor); const
 															imageUrl=(colorIndex !==-1 &&
 															item.productId.image[colorIndex]) ?
 															item.productId.image[colorIndex] : item.productId.image[0];
 															%>
-															<img src="<%= imageUrl %>"
+															<img src="/<%= imageUrl %>"
 																alt="<%= item.productId.brandName %> - <%= selectedColor %>">
 													</div>
 												</td>

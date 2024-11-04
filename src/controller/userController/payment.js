@@ -5,6 +5,13 @@ const ProductVariant = require("../../models/productVarients");
 const { calculateFinalPrice } = require("../../utils/offer");
 const {validateCoupon} = require('../../utils/coupon')
 const Coupon = require('../../models/coupon')
+const Razorpay = require('razorpay')
+const crypto = require('crypto')
+
+const razorpay = new Razorpay({
+  key_id: 'rzp_test_30GZgvSGo32MQa',
+  key_secret: 'QyPY3GY7fyDrdpXS6E9nyJ95'
+})
 
 const loadPayment = async (req, res) => {
   try {
@@ -307,7 +314,6 @@ const placeOrderCod = async (req, res) => {
   }
 };
 
-
 const orderConfirm = async (req, res) => {
   try {
     const orderId = req.params.id;
@@ -372,8 +378,150 @@ const orderConfirm = async (req, res) => {
   }
 };
 
+const placeOrderRazorPay = async (req, res) => {
+  try {
+    const userId = req.session.user._id;
+    const { shippingAddress } = req.body;
+
+    // Get cart items and calculate total (reusing your existing logic)
+    const cart = await Cart.find({ userId })
+      .populate({
+        path: "productId",
+        populate: { path: "category" },
+      })
+      .populate("variantId");
+
+    if (!cart || cart.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Your cart is empty"
+      });
+    }
+
+    // Calculate order items and totals (reusing your existing logic)
+    const orderItems = await Promise.all(
+      cart.map(async (cartItem) => {
+        const priceDetails = await calculateFinalPrice(
+          cartItem.productId,
+          cartItem.variantId
+        );
+        const itemPrice = priceDetails.hasOffer
+          ? priceDetails.finalPrice
+          : cartItem.variantId.price;
+        return {
+          productId: cartItem.productId._id,
+          variantId: cartItem.variantId._id,
+          quantity: cartItem.quantity,
+          price: itemPrice,
+          totalPrice: itemPrice * cartItem.quantity
+        };
+      })
+    );
+
+    const subtotal = orderItems.reduce((total, item) => total + item.totalPrice, 0);
+    const shippingCharge = 99;
+    const finalTotal = subtotal + shippingCharge;
+
+    // Create Razorpay order
+    const razorpayOrder = await razorpay.orders.create({
+      amount: finalTotal * 100, // Razorpay expects amount in paise
+      currency: 'INR',
+      receipt: `order_${Date.now()}`
+    });
+
+    // Create pending order in database
+    const order = new Order({
+      userId,
+      paymentMethod: 'razorpay',
+      shippingAddress,
+      orderStatus: 'pending',
+      paymentStatus: 'not-paid',
+      items: orderItems,
+      subtotal,
+      shippingCharge,
+      finalTotal
+    });
+
+    await order.save();
+
+    res.json({
+      success: true,
+      key_id: process.env.RAZORPAY_KEY_ID,
+      order: {
+        id: razorpayOrder.id,
+        amount: razorpayOrder.amount,
+        currency: razorpayOrder.currency
+      },
+      orderId: order._id
+    });
+
+  } catch (error) {
+    console.error('Create Razorpay order error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to create payment order'
+    });
+  }
+};
+
+const verifyPlaceOrderRazorPay = async (req, res) => {
+  try {
+    const {
+      razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId
+    } = req.body;
+
+    console.log(razorpay_order_id,
+      razorpay_payment_id,
+      razorpay_signature,
+      orderId)
+
+    // Verify signature
+    const sign = razorpay_order_id + "|" + razorpay_payment_id;
+    const expectedSign = crypto
+      .createHmac("sha256", 'QyPY3GY7fyDrdpXS6E9nyJ95')
+      .update(sign)
+      .digest("hex");
+
+    if (razorpay_signature !== expectedSign) {
+      throw new Error('Invalid payment signature');
+    }
+
+    // Update order status
+    await Order.findByIdAndUpdate(orderId, {
+      orderStatus: 'processing',
+      paymentStatus: 'paid'
+    });
+
+    // Update product stock and clear cart (reusing your existing logic)
+    const order = await Order.findById(orderId);
+    for (const item of order.items) {
+      await ProductVariant.findByIdAndUpdate(item.variantId, {
+        $inc: { stock: -item.quantity }
+      });
+    }
+    await Cart.deleteMany({ userId: order.userId });
+
+    res.json({
+      success: true,
+      orderId: orderId
+    });
+
+  } catch (error) {
+    console.error('Verify payment error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Payment verification failed'
+    });
+  }
+};
+
 module.exports = {
   loadPayment,
   placeOrderCod,
   orderConfirm,
+  placeOrderRazorPay,
+  verifyPlaceOrderRazorPay
 };

@@ -101,6 +101,10 @@ router.get('/checkout/payment',checkSession,payment.loadPayment)
 
 router.post('/checkout/place-order-cod',checkSession,payment.placeOrderCod)
 
+router.post('/checkout/create-razorpay-order',checkSession,payment.placeOrderRazorPay)
+
+router.post('/checkout/verify-razorpay-payment',checkSession,payment.verifyPlaceOrderRazorPay)
+
 router.get('/order/confirmation/:id',checkSession,payment.orderConfirm)
 
 router.get('/logout',checkSession,user.logout)

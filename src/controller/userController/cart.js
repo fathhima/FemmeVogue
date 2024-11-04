@@ -18,19 +18,27 @@ const loadCart = async (req, res) => {
 
     // Calculate prices with offers for each cart item
     const cartItemsWithOffers = await Promise.all(cart.map(async (item) => {
+      // Verify productId and variantId exist to prevent errors
+      if (!item.productId || !item.variantId) return null;
+
       const priceDetails = await calculateFinalPrice(item.productId, item.variantId);
-      
+
+      // Convert Mongoose document to plain object and add price details
       return {
         ...item.toObject(),
         originalPrice: priceDetails.originalPrice,
         finalPrice: priceDetails.finalPrice,
         discountAmount: priceDetails.discountAmount,
-        hasOffer: priceDetails.hasOffer
+        hasOffer: priceDetails.hasOffer,
+        imageUrl: item.productId.image ? item.productId.image[0] : '/path/to/default-image.jpg' // Use the first image or a default
       };
     }));
 
+    // Filter out any null items that may have resulted from missing product/variant data
+    const validCartItems = cartItemsWithOffers.filter(item => item !== null);
+
     // Calculate subtotal with discounted prices
-    const subtotal = cartItemsWithOffers.reduce((total, item) => {
+    const subtotal = validCartItems.reduce((total, item) => {
       return total + (item.hasOffer ? item.finalPrice : item.variantId.price) * item.quantity;
     }, 0);
 
@@ -39,14 +47,14 @@ const loadCart = async (req, res) => {
 
     res.render("user/shopping-cart", { 
       user: user, 
-      cartItems: cartItemsWithOffers, 
+      cartItems: validCartItems, 
       total: finalTotal,
       shippingCharge: shippingCharge,
       subtotal: subtotal 
     });
   } catch (err) {
     console.error(err);
-    res.status(400).send("something went wrong");
+    res.status(500).send("Something went wrong.");
   }
 };
 
