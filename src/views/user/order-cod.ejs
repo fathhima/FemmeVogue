@@ -93,26 +93,57 @@
             </div>
 
             <!-- Order Summary -->
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
-                <div class="space-y-2">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Subtotal</span>
-                        <span>₹<%= order.subtotal.toFixed(2) %></span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Shipping</span>
-                        <span>₹<%= order.shippingCharge.toFixed(2) %></span>
-                    </div>
-                    <div class="flex justify-between font-semibold border-t pt-2 mt-2">
-                        <span>Total</span>
-                        <span>₹<%= order.finalTotal.toFixed(2) %></span>
-                    </div>
-                    <div class="text-sm text-gray-600 mt-2">
-                        Payment Method: <%= order.paymentMethod.toUpperCase() %>
-                    </div>
-                </div>
+<div class="bg-gray-50 p-4 rounded-lg">
+    <h2 class="text-lg font-semibold mb-4">Order Summary</h2>
+    <div class="space-y-2">
+        <!-- Subtotal -->
+        <div class="flex justify-between">
+            <span class="text-gray-600">Subtotal</span>
+            <span>₹<%= order.subtotal.toFixed(2) %></span>
+        </div>
+
+        <!-- Product Discounts -->
+        <% if (order.hasOffers && order.totalSavings > 0) { %>
+            <div class="flex justify-between text-green-600">
+                <span>Product Discounts</span>
+                <span>-₹<%= order.totalSavings.toFixed(2) %></span>
             </div>
+        <% } %>
+
+        <!-- Coupon Discount -->
+        <% if (order.couponDiscount && order.couponDiscount > 0) { %>
+            <div class="flex justify-between text-green-600">
+                <span>Coupon Applied (<%= order.couponCode %>)</span>
+                <span>-₹<%= order.couponDiscount.toFixed(2) %></span>
+            </div>
+        <% } %>
+
+        <!-- Shipping -->
+        <div class="flex justify-between">
+            <span class="text-gray-600">Shipping</span>
+            <span>₹<%= order.shippingCharge.toFixed(2) %></span>
+        </div>
+
+        <!-- Total Savings -->
+        <% if ((order.totalSavings > 0 || order.couponDiscount > 0)) { %>
+            <div class="flex justify-between text-sm text-green-600 border-t pt-2">
+                <span>Total Savings</span>
+                <span>₹<%= (order.totalSavings + (order.couponDiscount || 0)).toFixed(2) %></span>
+            </div>
+        <% } %>
+
+        <!-- Final Total -->
+        <div class="flex justify-between font-semibold border-t pt-2 mt-2">
+            <span>Total</span>
+            <span>₹<%= order.finalTotal.toFixed(2) %></span>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="text-sm text-gray-600 mt-2">
+            Payment Method: <%= order.paymentMethod.toUpperCase() %>
+        </div>
+    </div>
+</div>
 
             <!-- Action Buttons -->
             <div class="mt-8 flex justify-center space-x-4">

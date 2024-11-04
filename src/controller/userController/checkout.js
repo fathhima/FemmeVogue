@@ -1,7 +1,7 @@
 const Address = require("../../models/address");
 const Cart = require("../../models/cart");
 const {calculateFinalPrice} = require('../../utils/offer')
-
+ 
 const loadAddress = async (req, res) => {
   try {
     const user = req.session.user;

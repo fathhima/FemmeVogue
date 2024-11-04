@@ -5,6 +5,7 @@ const User = require('../controller/userController/myaccount')
 const cart =  require('../controller/userController/cart')
 const checkout = require('../controller/userController/checkout')
 const payment = require('../controller/userController/payment')
+const coupon = require('../controller/userController/coupon')
 const { checkSession, isLogin, handleOtpAccess } = require("../middlewares/userAuth");
 const passport = require('../middlewares/googleAuth')
 
@@ -87,6 +88,12 @@ router.get('/cart',checkSession,cart.loadCart)
 router.post('/cart/update',checkSession,cart.updateCart)
 
 router.delete('/cart/remove/:id',checkSession,cart.removeItem)
+
+router.get('/cart/coupons/available',checkSession,coupon.availableCoupons)
+
+router.post('/cart/coupons/apply',checkSession,coupon.applyCoupon)
+
+router.post('/cart/coupons/remove',checkSession,coupon.removeCoupon)
 
 router.get('/checkout/address',checkSession,checkout.loadAddress)
 

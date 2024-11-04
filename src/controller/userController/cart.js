@@ -2,7 +2,6 @@ const products = require("../../models/products");
 const productVariant = require("../../models/productVarients");
 const Cart = require("../../models/cart");
 const {calculateFinalPrice} = require('../../utils/offer');
-const { errorMonitor } = require("nodemailer/lib/xoauth2");
 
 const loadCart = async (req, res) => {
   try {
@@ -55,7 +54,7 @@ const addToCart = async (req, res) => {
   try {
     const { productId, variantId, quantity } = req.body;
     const userId = req.session.user._id;
-    const MAX_QUANTITY_PER_PERSON = 10; // Set your default max limit
+    const MAX_QUANTITY_PER_PERSON = 10; 
 
     // Validate inputs
     if (!productId || !variantId || !quantity) {
@@ -152,21 +151,16 @@ const addToCart = async (req, res) => {
 
 const updateCart = async (req, res) => {
   try {
-    // 1. Get basic information
     const { _id, quantity } = req.body;
     const userId = req.session.user._id;
-    console.log(_id,quantity,userId)
     
-    // 2. Basic validations
     if (!_id || !quantity || quantity <= 0) {
       return res.status(400).json({
         success: false,
         message: "Invalid inputs",
       });
     }
-    console.log('true')
 
-    // 3. Find the cart item with product details
     const cartItem = await Cart.findOne({ _id: _id, userId })
       .populate({
         path: "productId",
@@ -174,32 +168,25 @@ const updateCart = async (req, res) => {
       })
       .populate("variantId");
 
-      console.log(cartItem)
 
-    // 4. Check if quantity is valid
     if (quantity > 10 || quantity > cartItem.variantId.stock) {
       return res.status(400).json({
         success: false,
         message: "Invalid quantity",
       });
     }
-    console.log('true')
 
-    // 5. Calculate price with any offers
     const priceDetails = await calculateFinalPrice(cartItem.productId, cartItem.variantId);
     
-    // 6. Calculate total price (with or without offer)
     const totalPrice = priceDetails.hasOffer 
-      ? priceDetails.finalPrice * quantity  // Use offer price
-      : cartItem.variantId.price * quantity; // Use regular price
+      ? priceDetails.finalPrice * quantity  
+      : cartItem.variantId.price * quantity; 
 
-    // 7. Update the cart
     await Cart.findByIdAndUpdate(_id, {
       quantity: quantity,
       price: totalPrice
     });
 
-    // 8. Send response
     res.json({
       success: true,
       message: "Cart updated successfully",
@@ -273,7 +260,7 @@ const removeItem = async (req, res) => {
       success: true,
       message: "Item removed from cart",
       remainingItems: cartItemsWithOffers,
-      cartTotal: subtotal + 99 // Adding shipping charge
+      cartTotal: subtotal + 99 
     });
 
   } catch (error) {

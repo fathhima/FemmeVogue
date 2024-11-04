@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const admin = require("../controller/adminController/admin");
 const Admin = require('../controller/adminController/offer')
+const Coupon = require('../controller/adminController/coupon')
 const { checkSession, isLogin } = require("../middlewares/adminAuth");
 const multer = require("multer");
 const path = require("path");
@@ -102,6 +103,20 @@ router.put('/offer/:id',checkSession,Admin.offerEdit)
 router.patch('/offer/:id/status',checkSession,Admin.offerStatus)
 
 router.delete('/offer/:id',checkSession,Admin.offerDelete)
+
+router.get('/coupon',checkSession,Coupon.loadCoupon)
+
+router.get('/coupons',checkSession,Coupon.loadCoupons)
+
+router.post('/coupons',checkSession,Coupon.couponCreate)
+
+router.get('/coupons/:id',checkSession,Coupon.loadSingleCoupon)
+
+router.put('/coupons/:id',checkSession,Coupon.couponEdit)
+
+router.patch('/coupons/:id/toggle',checkSession,Coupon.toggleCoupon)
+
+router.delete('/coupons/:id',checkSession,Coupon.deleteCoupon)
 
 router.get("/logout",checkSession, admin.logout);
 

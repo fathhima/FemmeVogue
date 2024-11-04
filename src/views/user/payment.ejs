@@ -106,19 +106,87 @@
                         <div class="space-y-3">
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Subtotal</span>
-                                <span>₹<%= subtotal.toFixed(2) %></span>
+                                <span data-subtotal="<%= subtotal %>">₹<%= subtotal.toFixed(2) %></span>
                             </div>
-                            <div class="flex justify-between text-red-600">
-                                <span>Saving:</span>
-                                <span></span>
+                            <div class="border-t border-b py-3 mb-3">
+                                <!-- Coupon section with applied state -->
+                                <div id="couponDefault" class="flex items-center gap-2">
+                                    <button onclick="openCouponModal()"
+                                        class="text-blue-600 hover:text-blue-700 flex items-center gap-2">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                        </svg>
+                                        Apply Coupon
+                                    </button>
+                                </div>
+                                <!-- Applied coupon state -->
+                                <div id="couponApplied" class="hidden">
+                                    <div class="flex justify-between items-center">
+                                        <div class="flex items-center gap-2">
+                                            <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+                                            </svg>
+                                            <div>
+                                                <span class="text-green-600 font-medium" id="appliedCouponCode"></span>
+                                                <span class="text-gray-500 text-sm ml-2" id="couponDiscount"></span>
+                                            </div>
+                                        </div>
+                                        <button onclick="removeCoupon()"
+                                            class="text-red-600 hover:text-red-700 text-sm">Remove</button>
+                                    </div>
+                                </div>
                             </div>
                             <div class="flex justify-between">
                                 <span class="text-gray-600">Shipping:</span>
-                                <span>₹<%= shippingCharge.toFixed(2) %></span>
+                                <span data-shipping="<%= shippingCharge %>">₹<%= shippingCharge.toFixed(2) %></span>
+                            </div>
+                            <!-- Add savings row that shows up when coupon is applied -->
+                            <div id="savingsRow" class="flex justify-between hidden">
+                                <span class="text-green-600">Savings:</span>
+                                <span class="text-green-600" data-savings="0">₹0.00</span>
                             </div>
                             <div class="border-t pt-3 flex justify-between font-semibold">
                                 <span>Estimated total:</span>
-                                <span>₹<%= finalTotal.toFixed(2) %></span>
+                                <span data-total="<%= finalTotal %>">₹<%= finalTotal.toFixed(2) %></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="couponModal"
+                    class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+                    <div class="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold">Apply Coupon</h3>
+                            <button onclick="closeCouponModal()" class="text-gray-500 hover:text-gray-700">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <!-- Coupon Input -->
+                        <div class="mb-4">
+                            <div class="flex gap-2">
+                                <input type="text" id="couponInput" placeholder="Enter coupon code"
+                                    class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <button onclick="validateCoupon()"
+                                    class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                    Apply
+                                </button>
+                            </div>
+                            <p id="couponMessage" class="mt-2 text-sm"></p>
+                        </div>
+
+                        <!-- Available Coupons -->
+                        <div class="border-t pt-4">
+                            <h4 class="font-medium mb-3">Available Coupons</h4>
+                            <div id="availableCoupons" class="space-y-3">
+                                <!-- Coupons will be populated here -->
                             </div>
                         </div>
                     </div>
@@ -129,8 +197,13 @@
         <!-- Footer -->
         <%-include("partials/footer")%>
 
+            <!-- Back to top -->
+            <div class="btn-back-to-top" id="myBtn">
+                <span class="symbol-btn-back-to-top">
+                    <i class="zmdi zmdi-chevron-up"></i>
+                </span>
+            </div>
 
-            // Add these in your HTML head
             <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
             <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
             <script>
@@ -186,6 +259,7 @@
                                     const orderData = {
                                         paymentMethod: 'cod',
                                         shippingAddress: addressData,
+                                        couponCode: currentCouponCode
                                     };
 
                                     // Send order to server using Axios
@@ -490,9 +564,162 @@
                     displaySelectedAddress();
                 });
 
+                const modal = document.getElementById('couponModal');
+                const couponInput = document.getElementById('couponInput');
+                const couponMessage = document.getElementById('couponMessage');
+                const availableCouponsContainer = document.getElementById('availableCoupons');
+                const couponDefault = document.getElementById('couponDefault');
+                const couponApplied = document.getElementById('couponApplied');
+                const savingsRow = document.getElementById('savingsRow');
+                let currentCouponCode = null;
+
+                function openCouponModal() {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    loadAvailableCoupons();
+                }
+
+                function closeCouponModal() {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                    couponMessage.textContent = '';
+                    couponMessage.className = 'mt-2 text-sm';
+                    couponInput.value = '';
+                }
+
+                async function loadAvailableCoupons() {
+                    try {
+                        const response = await axios.get('/cart/coupons/available');
+                        const coupons = response.data;
+
+                        availableCouponsContainer.innerHTML = coupons
+                            .map(coupon => `
+                <div class="border rounded-lg p-3 hover:border-blue-500 cursor-pointer"
+                     onclick="applyCouponCode('${coupon.name}')">
+                    <div class="flex justify-between items-start">
+                        <div>
+                            <span class="font-medium text-blue-600">${coupon.name}</span>
+                            <p class="text-sm text-gray-600 mt-1">${coupon.description}</p>
+                        </div>
+                        <button class="text-blue-600 text-sm hover:underline">Apply</button>
+                    </div>
+                    <div class="mt-2 text-xs text-gray-500">
+                        Min. Purchase: ₹${coupon.minimumPurchase} | 
+                        Expires: ${new Date(coupon.validUntil).toLocaleDateString()}
+                    </div>
+                </div>
+            `).join('');
+                    } catch (error) {
+                        console.error('Error loading coupons:', error);
+                        availableCouponsContainer.innerHTML = '<p class="text-red-500">Error loading available coupons</p>';
+                    }
+                }
+
+                function applyCouponCode(code) {
+                    couponInput.value = code;
+                    validateCoupon();
+                }
+
+                async function validateCoupon() {
+                    const code = couponInput.value.trim();
+                    if (!code) {
+                        showCouponMessage('Please enter a coupon code', 'error');
+                        return;
+                    }
+
+                    try {
+                        const subtotal = parseFloat(document.querySelector('[data-subtotal]').dataset.subtotal);
+                        const response = await axios.post('/cart/coupons/apply', {
+                            couponCode: code,
+                            cartTotal: subtotal
+                        });
+
+                        if (response.data.success) {
+                            const discount = response.data.couponDetails.discountAmount;
+                            showCouponMessage(`Coupon applied! You saved ₹${discount.toFixed(2)}`, 'success');
+                            updateOrderSummary(discount);
+                            showAppliedCoupon(code, discount);
+                            currentCouponCode = code;
+                            setTimeout(closeCouponModal, 1500);
+                        }
+                    } catch (error) {
+                        const message = error.response?.data?.message || 'Error validating coupon';
+                        showCouponMessage(message, 'error');
+                    }
+                }
+
+                function showCouponMessage(message, type) {
+                    couponMessage.textContent = message;
+                    couponMessage.className = `mt-2 text-sm ${type === 'success' ? 'text-green-600' : 'text-red-600'}`;
+                }
+
+                function showAppliedCoupon(code, discount) {
+                    document.getElementById('appliedCouponCode').textContent = code;
+                    document.getElementById('couponDiscount').textContent = `(-₹${discount.toFixed(2)})`;
+                    couponDefault.classList.add('hidden');
+                    couponApplied.classList.remove('hidden');
+                    savingsRow.classList.remove('hidden');
+                }
+
+                function resetCouponState() {
+                    couponDefault.classList.remove('hidden');
+                    couponApplied.classList.add('hidden');
+                    savingsRow.classList.add('hidden');
+                    currentCouponCode = null;
+                }
+
+                async function removeCoupon() {
+                    if (!currentCouponCode) return;
+
+                    try {
+                        const response = await axios.post('/cart/coupons/remove', {
+                            couponCode: currentCouponCode
+                        });
+
+                        if (response.data.success) {
+                            const savingsEl = document.querySelector('[data-savings]');
+                            const discount = parseFloat(savingsEl.dataset.savings);
+                            updateOrderSummary(-discount); // Remove the discount amount
+                            resetCouponState();
+                        }
+                    } catch (error) {
+                        console.error('Error removing coupon:', error);
+                        // Optionally show an error message to the user
+                    }
+                }
+
+                function updateOrderSummary(discountAmount) {
+                    const subtotalEl = document.querySelector('[data-subtotal]');
+                    const totalEl = document.querySelector('[data-total]');
+                    const savingsEl = document.querySelector('[data-savings]');
+
+                    const subtotal = parseFloat(subtotalEl.dataset.subtotal);
+                    const shipping = parseFloat(document.querySelector('[data-shipping]').dataset.shipping);
+
+                    // Update savings
+                    const currentSavings = parseFloat(savingsEl.dataset.savings || 0);
+                    const newSavings = currentSavings + discountAmount;
+                    savingsEl.textContent = `₹${newSavings.toFixed(2)}`;
+                    savingsEl.dataset.savings = newSavings;
+
+                    // Update total
+                    const newTotal = subtotal + shipping - newSavings;
+                    totalEl.textContent = `₹${newTotal.toFixed(2)}`;
+                    totalEl.dataset.total = newTotal;
+                }
+
+                // Close modal when clicking outside
+                modal.addEventListener('click', (e) => {
+                    if (e.target === modal) {
+                        closeCouponModal();
+                    }
+                });
+
             </script>
+
             <!--===============================================================================================-->
             <script src="/js/main.js"></script>
+
 
 </body>
 

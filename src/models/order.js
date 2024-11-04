@@ -86,6 +86,14 @@ const orderSchema = new mongoose.Schema({
     orderedAt: {
         type: Date,
         default: Date.now
+    },
+    appliedCoupon: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Coupon'
+    },
+    couponDiscount: {
+        type: Number,
+        default: 0
     }
 });
 

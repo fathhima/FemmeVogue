@@ -74,7 +74,7 @@ const offerCreate = async (req, res) => {
         }
 
         // Validate discount value for percentage
-        if (discountType === "percentage" && (discountValue <= 0 || discountValue >= 100)) {
+        if (discountType === "percentage" && (discountValue <= 0 || discountValue > 100)) {
             return res.status(400).json({
                 success: false,
                 message: "Percentage discount must be between 0 and 100"
@@ -134,7 +134,6 @@ const getOffer = async(req,res) => {
 
 const offerEdit = async(req,res) => {
     try{
-        console.log('hi')
         const offerId = req.params.id
         const {
             name,
