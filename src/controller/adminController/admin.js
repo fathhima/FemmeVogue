@@ -384,36 +384,20 @@ const orderStatus = async (req, res) => {
     if (order.orderStatus === "cancelled") {
       return res.status(400).json({ error: "Cannot update cancelled order" });
     }
-
     if(status === "cancelled"){
-      // Update stock for each item
     for (const item of order.items) {
       if (item.variantId) {
-        // Log for debugging
-        console.log(`Before update - Variant ${item.variantId._id}: Current stock: ${item.variantId.stock}`);
-        
-        // Increase the stock
         item.variantId.stock += item.quantity;
-        
-        console.log(`After update - Variant ${item.variantId._id}: New stock: ${item.variantId.stock}`);
-        
-        // Save the variant document
         await item.variantId.save();
       }
     }
       order.paymentStatus = "cancelled"
     }
-
-    // Update payment status if order is delivered
     if (status === "delivered") {
       order.paymentStatus = "completed";
     }
-
     order.orderStatus = status;
-
-    
     await order.save();
-
     res.json({ message: "Order status updated successfully", order });
   } catch (error) {
     console.error("Update order status error:", error);
@@ -513,6 +497,109 @@ const productStatus = async(req,res) => {
   }
 }
 
+const returnDetails = async (req, res) => {
+  try {
+    console.log('hi')
+      const order = await Orders.findById(req.params.id)
+          .populate('items.productId');
+      
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      res.json({ order });
+  } catch (error) {
+      res.status(500).json({ message: 'Error fetching return details' });
+  }
+}
+
+const returnApprove = async (req, res) => {
+  try {
+      const order = await Orders.findById(req.params.id).populate('items.variantId')
+      
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      if (order.returnStatus === 'pending') {
+          // Full order return
+          order.returnStatus = 'approved';
+          order.returnProcessedAt = new Date();
+          order.orderStatus = 'Return_Approved'
+          
+          // Update all items
+          order.items.forEach(item => {
+              if (item.returnRequest.status === 'pending') {
+                  item.returnRequest.status = 'approved';
+                  item.returnRequest.processedAt = new Date();
+                  item.status = 'return'
+              }
+          });
+
+      } else {
+          // Partial return
+          order.items.forEach(item => {
+              if (item.returnRequest?.status === 'pending') {
+                  item.returnRequest.status = 'approved';
+                  item.returnRequest.processedAt = new Date();
+              }
+          });
+      }
+
+      await order.save();
+
+      for (const item of order.items) {
+        if (item.variantId) {
+          item.variantId.stock += item.quantity;
+          await item.variantId.save();
+        }
+      }
+
+      res.json({ message: 'Return request approved successfully' });
+    } catch (error) {
+      console.log(error)
+        res.status(500).json({ message: 'Error approving return request' });
+    }
+}
+
+const returnReject = async (req, res) => {
+  try {
+      const order = await Orders.findById(req.params.id);
+      
+      if (!order) {
+          return res.status(404).json({ message: 'Order not found' });
+      }
+
+      if (order.returnStatus === 'pending') {
+          // Full order return
+          order.returnStatus = 'rejected';
+          order.returnProcessedAt = new Date();
+          order.orderStatus = 'Return_Rejected'
+          
+          // Update all items
+          order.items.forEach(item => {
+              if (item.returnRequest.status === 'pending') {
+                  item.returnRequest.status = 'rejected';
+                  item.returnRequest.processedAt = new Date();
+              }
+          });
+      } else {
+          // Partial return
+          order.items.forEach(item => {
+              if (item.returnRequest?.status === 'pending') {
+                  item.returnRequest.status = 'rejected';
+                  item.returnRequest.processedAt = new Date();
+              }
+          });
+      }
+
+      await order.save();
+      res.json({ message: 'Return request rejected successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Error rejecting return request' });
+    }
+}
+
 const logout = async (req, res) => {
   try {
     req.session.destroy((err) => {
@@ -546,5 +633,8 @@ module.exports = {
   orderStatus,
   productCancel,
   productStatus,
+  returnDetails,
+  returnApprove,
+  returnReject,
   logout,
 };

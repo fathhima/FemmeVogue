@@ -219,11 +219,8 @@ const updateCart = async (req, res) => {
 
 const removeItem = async (req, res) => {
   try {
-    // 1. Get basic information
     const cartItemId = req.params.id;
     const userId = req.session.user._id;
-
-    // 2. Check if item exists
     const cartItem = await Cart.findOne({ _id: cartItemId, userId });
     if (!cartItem) {
       return res.status(404).json({
@@ -231,22 +228,15 @@ const removeItem = async (req, res) => {
         message: "Cart item not found",
       });
     }
-
-    // 3. Remove the item
     await Cart.findByIdAndDelete(cartItemId);
-
-    // 4. Get remaining cart items
     const remainingCart = await Cart.find({ userId })
       .populate({
         path: "productId",
         populate: { path: "category" }
       })
       .populate("variantId");
-
-    // 5. Calculate prices for remaining items
     const cartItemsWithOffers = await Promise.all(remainingCart.map(async (item) => {
-      // Get price details for each item
-      const priceDetails = await calculateFinalPrice(item.productId, item.variantId);
+    const priceDetails = await calculateFinalPrice(item.productId, item.variantId);
       
       return {
         ...item.toObject(),
@@ -257,13 +247,11 @@ const removeItem = async (req, res) => {
       };
     }));
 
-    // 6. Calculate total cart value
     const subtotal = cartItemsWithOffers.reduce((total, item) => {
       const priceToUse = item.hasOffer ? item.finalPrice : item.variantId.price;
       return total + (priceToUse * item.quantity);
     }, 0);
 
-    // 7. Send response
     res.json({
       success: true,
       message: "Item removed from cart",

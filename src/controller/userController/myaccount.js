@@ -271,7 +271,6 @@ const cancelOrder = async (req, res) => {
         item.cancelReason = reason;
         item.status = "cancelled";
 
-        // Update the stock for the product variant
         const productVariant = await productVarients.findById(item.variantId);
         productVariant.stock += item.quantity;
         await productVariant.save();
@@ -305,9 +304,7 @@ const productCancel = async(req,res) => {
             const productvariant = await productVarients.findById(item.variantId)
             productvariant.stock += item.quantity
             await productvariant.save()
-             // Check if this was the only item in the order
          if (order.items.every(i => i.status === 'cancelled')) {
-        // If all items are cancelled, set order and payment status to cancelled
         order.orderStatus = 'cancelled';
         order.paymentStatus = 'cancelled';
       }
@@ -320,9 +317,63 @@ const productCancel = async(req,res) => {
     }
 };
 
+const returnOrder = async(req,res) => {
+  try {
+    const { id } = req.params;
+    const { reason, comments } = req.body;
+    const userId = req.session.user._id; 
+
+    const order = await Order.findOne({ _id: id, userId });
+
+    if (!order) {
+        return res.status(404).json({ message: 'Order not found' });
+    }
+
+    if (order.orderStatus !== 'delivered') {
+        return res.status(400).json({
+            message: 'Only delivered orders can be returned'
+        });
+    }
+
+    if (order.returnStatus !== 'none') {
+        return res.status(400).json({
+            message: 'Return already requested for this order'
+        });
+    }
+    order.returnStatus = 'pending';
+    order.returnReason = reason;
+    order.returnComments = comments;
+    order.returnRequestedAt = new Date();
+    order.orderStatus = 'Return_Requested'
+    
+    order.items = order.items.map(item => ({
+        ...item,
+        returnRequest: {
+            status: 'pending',
+            reason: reason,
+            comments: comments,
+            requestedAt: new Date()
+        }
+    }));
+
+    await order.save();
+
+    return res.status(200).json({
+        message: 'Return request submitted successfully',
+        order
+    });
+} catch (error) {
+    console.error('Return request error:', error);
+    return res.status(500).json({
+        message: 'An error occurred while processing your return request'
+    });
+}
+}
+
 const wishlist = async (req, res) => {
   try {
-    const user = req.session.user;
+    const userId = req.session.user._id;
+    const user = await User.findById(userId).populate('wishlist')
     res.render("user/layout", { page: "wishlist", user });
   } catch (err) {
     console.error(err);
@@ -342,5 +393,6 @@ module.exports = {
   orders,
   cancelOrder,
   productCancel,
+  returnOrder,
   wishlist,
 };

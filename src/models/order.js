@@ -31,11 +31,30 @@ const orderSchema = new mongoose.Schema({
         },
         status: {
             type: String,
-            enum: ['pending','processing','shipped','delivered','cancelled'],
+            enum: ['pending','processing','shipped','delivered','cancelled','return'],
             default: 'pending'
         },
         cancelReason: {
             type: String
+        },
+        returnRequest: {
+            status: {
+                type: String,
+                enum: ['none', 'pending', 'approved', 'rejected', 'completed'],
+                default: 'none'
+            },
+            reason: {
+                type: String
+            },
+            comments: {
+                type: String
+            },
+            requestedAt: {
+                type: Date
+            },
+            processedAt: {
+                type: Date
+            }
         }
     }],
     shippingAddress: {
@@ -68,7 +87,7 @@ const orderSchema = new mongoose.Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled'],
+        enum: ['pending', 'processing', 'shipped', 'delivered', 'cancelled','Return_Requested','Return_Approved','Return_Rejected','returned'],
         default: 'pending'
     },
     subtotal: {
@@ -94,6 +113,23 @@ const orderSchema = new mongoose.Schema({
     couponDiscount: {
         type: Number,
         default: 0
+    },
+    returnStatus: {
+        type: String,
+        enum: ['none', 'pending', 'approved', 'rejected', 'completed'],
+        default: 'none'
+    },
+    returnReason: {
+        type: String
+    },
+    returnComments: {
+        type: String
+    },
+    returnRequestedAt: {
+        type: Date
+    },
+    returnProcessedAt: {
+        type: Date
     }
 });
 

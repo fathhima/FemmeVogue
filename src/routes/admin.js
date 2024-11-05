@@ -92,6 +92,12 @@ router.put('/orders/:orderId/items/:itemId/cancel',checkSession,admin.productCan
 
 router.put('/orders/:orderId/items/:itemId/status',checkSession,admin.productStatus)
 
+router.get('/orders/:id/return-details',checkSession,admin.returnDetails)
+
+router.post('/orders/:id/return-approve',checkSession,admin.returnApprove)
+
+router.post('/orders/:id/return-reject',checkSession,admin.returnReject)
+
 router.get('/offer',checkSession,Admin.loadOffers)
 
 router.post('/offer/create',checkSession,Admin.offerCreate)

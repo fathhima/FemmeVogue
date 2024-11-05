@@ -79,6 +79,8 @@ router.post('/profile/orders/:id/cancel',checkSession,User.cancelOrder)
 
 router.post('/profile/orders/:orderId/products/:productId/cancel',checkSession,User.productCancel)
 
+router.post('/profile/orders/:id/return',checkSession,User.returnOrder)
+
 router.get('/profile/wishlist',checkSession,User.wishlist)
 
 router.post('/add-to-cart',checkSession,cart.addToCart)

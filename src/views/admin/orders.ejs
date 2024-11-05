@@ -128,6 +128,7 @@
                                                     </span>
                                             </td>
                                             <td>
+                                                <% if(order.orderStatus !== 'Return_Approved' && order.orderStatus !== 'Return_Rejected'){ %>
                                                 <select class="form-select form-select-sm status-select"
                                                     data-order-id="<%= order._id %>" <%=order.orderStatus==='cancelled'
                                                     ? 'disabled' : '' %>>
@@ -142,6 +143,11 @@
                                                     <option value="cancelled" <%=order.orderStatus==='cancelled'
                                                         ? 'selected' : '' %>>Cancelled</option>
                                                 </select>
+                                                <% } else if(order.orderStatus == 'Return_Approved') { %>
+                                                    <p class="text-muted">Return Accepted</p>
+                                                    <% } else { %>
+                                                        <p class="text-muted">Return Rejected</p>
+                                                  <% } %>
                                             </td>
                                             <td>
                                                 <%= new Date(order.orderedAt).toLocaleDateString() %>
@@ -151,6 +157,11 @@
                                                     onclick="viewOrderDetails('<%= order._id %>')">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
+                                                <% if (order.returnStatus === 'pending' || order.items.some(item => item.returnRequest?.status === 'pending')) { %>
+                                                    <button class="btn btn-warning btn-sm" onclick="viewReturnDetails('<%= order._id %>')">
+                                                        <i class="fas fa-undo"></i> Return Request
+                                                    </button>
+                                                <% } %>
                                             </td>
                                         </tr>
                                         <% }) %>
@@ -160,6 +171,45 @@
                     </div>
             </div>
     </div>
+
+    <div class="modal fade" id="returnDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Return Request Details</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="returnDetails">
+                        <div class="mb-3">
+                            <h6>Return Type:</h6>
+                            <p id="returnType"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Reason:</h6>
+                            <p id="returnReason"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Additional Comments:</h6>
+                            <p id="returnComments"></p>
+                        </div>
+                        <div class="mb-3">
+                            <h6>Requested Date:</h6>
+                            <p id="returnRequestedDate"></p>
+                        </div>
+                        <div id="returnItems" class="mb-3">
+                            <!-- Items will be populated dynamically -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" onclick="handleReturnAction('reject')">Reject</button>
+                    <button type="button" class="btn btn-success" onclick="handleReturnAction('approve')">Approve</button>
+                </div>
+            </div>
+        </div>
+    </div>    
 
     <!-- Order Details Modal -->
     <div class="modal fade" id="orderDetailsModal" tabindex="-1">
@@ -283,7 +333,7 @@
         }
 
         function initializeStatusSelects() {
-    document.querySelectorAll('.status-select').forEach(select => {
+        document.querySelectorAll('.status-select').forEach(select => {
         // Remove existing listeners first to prevent duplicates
         const newSelect = select.cloneNode(true);
         select.parentNode.replaceChild(newSelect, select);
@@ -639,6 +689,86 @@ async function updateOrderStatus(orderId, status, selectElement) {
             // Initialize status select handlers
             initializeStatusSelects();
         });
+
+        let currentReturnOrder = null;
+
+async function viewReturnDetails(orderId) {
+    try {
+        const response = await axios.get(`/admin/orders/${orderId}/return-details`);
+        const order = response.data.order;
+        currentReturnOrder = order;
+
+        // Populate modal with return details
+        document.getElementById('returnType').textContent = 
+            order.returnStatus === 'pending' ? 'Full Order Return' : 'Partial Return';
+        document.getElementById('returnReason').textContent = order.returnReason || 'N/A';
+        document.getElementById('returnComments').textContent = order.returnComments || 'N/A';
+        document.getElementById('returnRequestedDate').textContent = 
+            new Date(order.returnRequestedAt).toLocaleString();
+
+        // Handle items display for partial returns
+        const itemsContainer = document.getElementById('returnItems');
+        itemsContainer.innerHTML = '';
+        
+        if (order.items.some(item => item.returnRequest?.status === 'pending')) {
+            const itemsList = document.createElement('div');
+            itemsList.innerHTML = '<h6>Items Requested for Return:</h6>';
+            
+            order.items.forEach(item => {
+                if (item.returnRequest?.status === 'pending') {
+                    itemsList.innerHTML += `
+                        <div class="card mb-2">
+                            <div class="card-body">
+                                <h6>Product ID: ${item.productId}</h6>
+                                <p>Return Reason: ${item.returnRequest.reason || 'N/A'}</p>
+                                <p>Comments: ${item.returnRequest.comments || 'N/A'}</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            });
+            
+            itemsContainer.appendChild(itemsList);
+        }
+
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('returnDetailsModal'));
+        modal.show();
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Failed to load return details'
+        });
+    }
+}
+
+async function handleReturnAction(action) {
+    if (!currentReturnOrder) return;
+
+    try {
+        const response = await axios.post(`/admin/orders/${currentReturnOrder._id}/return-${action}`);
+        
+        if (response.status === 200) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: `Return request ${action}ed successfully`,
+                showConfirmButton: false,
+                timer: 1500
+            }).then(() => {
+                window.location.reload();
+            });
+        }
+    } catch (error) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.response?.data?.message || `Failed to ${action} return request`
+        });
+    }
+}
+
     </script>
     <style>
         .custom-toast {

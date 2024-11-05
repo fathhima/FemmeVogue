@@ -22,7 +22,6 @@ const calculateDiscount = (price, offer) => {
 const getApplicableOffers = async (product, category) => {
     try {
         const currentDate = new Date();
-        
         return await Offer.find({
             isActive: true,
             startDate: { $lte: currentDate },
@@ -39,6 +38,7 @@ const getApplicableOffers = async (product, category) => {
 };
 
 const calculateFinalPrice = async (product, variant) => {
+    console.log(product,variant)
     try {
         const offers = await getApplicableOffers(product, product.category);
         let bestDiscount = 0;
