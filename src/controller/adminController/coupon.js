@@ -43,7 +43,6 @@ const loadCoupons = async (req, res) => {
     }
 };
 
-// Create new coupon
 const couponCreate = async (req, res) => {
     try {
         const {
@@ -59,7 +58,6 @@ const couponCreate = async (req, res) => {
             userSpecific
         } = req.body;
 
-        // Check if coupon with same name exists
         const existingCoupon = await Coupon.findOne({ name: name.toUpperCase() });
         if (existingCoupon) {
             return res.status(400).json({
@@ -68,7 +66,6 @@ const couponCreate = async (req, res) => {
             });
         }
 
-        // Validate dates
         const now = new Date();
         const startDate = new Date(validFrom);
         const endDate = new Date(validUntil);
@@ -87,7 +84,6 @@ const couponCreate = async (req, res) => {
             });
         }
 
-        // Validate discount
         if (discountType === 'percentage' && (discountAmount <= 0 || discountAmount > 100)) {
             return res.status(400).json({
                 success: false,
@@ -151,8 +147,6 @@ const couponEdit = async (req, res) => {
     try {
         const couponId = req.params.id;
         const updateData = req.body;
-
-        // Check if updating name and if it already exists
         if (updateData.name) {
             const existingCoupon = await Coupon.findOne({ 
                 name: updateData.name.toUpperCase(),

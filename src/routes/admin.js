@@ -3,6 +3,7 @@ const router = express.Router();
 const admin = require("../controller/adminController/admin");
 const Admin = require('../controller/adminController/offer')
 const Coupon = require('../controller/adminController/coupon')
+const dashboard = require('../controller/adminController/dashboard')
 const { checkSession, isLogin } = require("../middlewares/adminAuth");
 const multer = require("multer");
 const path = require("path");
@@ -45,6 +46,8 @@ router.get("/login",isLogin, admin.loadLogin);
 router.post("/login", admin.login);
 
 router.get("/dashboard",checkSession, admin.loadDashboard);
+
+router.post('/generate-report',checkSession,dashboard.generateReport)
 
 router.get("/users",checkSession, admin.users);
 

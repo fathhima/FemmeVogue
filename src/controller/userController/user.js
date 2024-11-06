@@ -468,7 +468,6 @@ const detail = async (req, res) => {
     const user = req.session.user;
     const productId = req.params.id;
 
-    // Find the product by its ID
     const product = await products.findById(productId)
       .populate("category")
       .populate({

@@ -380,7 +380,6 @@ const orderStatus = async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    // Prevent status update if order is cancelled
     if (order.orderStatus === "cancelled") {
       return res.status(400).json({ error: "Cannot update cancelled order" });
     }
@@ -416,14 +415,11 @@ const productCancel = async (req, res) => {
     if (!orderItem) {
       return res.status(404).json({ error: "Order item not found" });
     }
-    // Check if order can be modified
     if (["delivered", "cancelled"].includes(order.orderStatus)) {
       return res.status(400).json({
         error: "Cannot modify order in current status",
       });
     }
-
-    // Return item quantity to inventory
     await productVariant.findByIdAndUpdate(
       orderItem.variantId,
       {
@@ -432,14 +428,12 @@ const productCancel = async (req, res) => {
     );
     orderItem.cancelled = true;
 
-    // Recalculate totals
     order.subtotal = order.items.reduce(
       (sum, item) => sum + item.price,
       0
     );
     order.finalTotal = order.subtotal + order.shippingCharge
 
-    // If no items left, cancel the entire order
     if (order.items.length === 0) {
       order.orderStatus = "cancelled";
       order.paymentStatus = "cancelled";
@@ -464,7 +458,6 @@ const productCancel = async (req, res) => {
 
 const productStatus = async(req,res) => {
   try{
-    console.log('hi')
     const {orderId,itemId} = req.params
     const {status} = req.body
     const validStatuses = ['pending', 'processing', 'shipped', 'delivered'];
@@ -483,7 +476,9 @@ const productStatus = async(req,res) => {
       return res.status(400).json({ error: 'Cannot update status for cancelled items' });
     }
     item.status = status;
+
     // If all non-cancelled items have the same status, update the overall order status
+
     const nonCancelledItems = order.items.filter(item => !item.cancelled);
     const allSameStatus = nonCancelledItems.every(item => item.status === status);
     if (allSameStatus) {
@@ -499,7 +494,6 @@ const productStatus = async(req,res) => {
 
 const returnDetails = async (req, res) => {
   try {
-    console.log('hi')
       const order = await Orders.findById(req.params.id)
           .populate('items.productId');
       
@@ -522,12 +516,10 @@ const returnApprove = async (req, res) => {
       }
 
       if (order.returnStatus === 'pending') {
-          // Full order return
           order.returnStatus = 'approved';
           order.returnProcessedAt = new Date();
           order.orderStatus = 'Return_Approved'
           
-          // Update all items
           order.items.forEach(item => {
               if (item.returnRequest.status === 'pending') {
                   item.returnRequest.status = 'approved';
@@ -537,7 +529,6 @@ const returnApprove = async (req, res) => {
           });
 
       } else {
-          // Partial return
           order.items.forEach(item => {
               if (item.returnRequest?.status === 'pending') {
                   item.returnRequest.status = 'approved';
@@ -571,12 +562,10 @@ const returnReject = async (req, res) => {
       }
 
       if (order.returnStatus === 'pending') {
-          // Full order return
           order.returnStatus = 'rejected';
           order.returnProcessedAt = new Date();
           order.orderStatus = 'Return_Rejected'
           
-          // Update all items
           order.items.forEach(item => {
               if (item.returnRequest.status === 'pending') {
                   item.returnRequest.status = 'rejected';
@@ -584,7 +573,6 @@ const returnReject = async (req, res) => {
               }
           });
       } else {
-          // Partial return
           order.items.forEach(item => {
               if (item.returnRequest?.status === 'pending') {
                   item.returnRequest.status = 'rejected';

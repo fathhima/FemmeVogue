@@ -383,7 +383,6 @@ const placeOrderRazorPay = async (req, res) => {
     const userId = req.session.user._id;
     const { shippingAddress } = req.body;
 
-    // Get cart items and calculate total (reusing your existing logic)
     const cart = await Cart.find({ userId })
       .populate({
         path: "productId",
@@ -398,7 +397,6 @@ const placeOrderRazorPay = async (req, res) => {
       });
     }
 
-    // Calculate order items and totals (reusing your existing logic)
     const orderItems = await Promise.all(
       cart.map(async (cartItem) => {
         const priceDetails = await calculateFinalPrice(
@@ -422,14 +420,12 @@ const placeOrderRazorPay = async (req, res) => {
     const shippingCharge = 99;
     const finalTotal = subtotal + shippingCharge;
 
-    // Create Razorpay order
     const razorpayOrder = await razorpay.orders.create({
-      amount: finalTotal * 100, // Razorpay expects amount in paise
+      amount: finalTotal * 100,
       currency: 'INR',
       receipt: `order_${Date.now()}`
     });
 
-    // Create pending order in database
     const order = new Order({
       userId,
       paymentMethod: 'razorpay',
@@ -478,7 +474,6 @@ const verifyPlaceOrderRazorPay = async (req, res) => {
       razorpay_signature,
       orderId)
 
-    // Verify signature
     const sign = razorpay_order_id + "|" + razorpay_payment_id;
     const expectedSign = crypto
       .createHmac("sha256", 'QyPY3GY7fyDrdpXS6E9nyJ95')
@@ -489,13 +484,11 @@ const verifyPlaceOrderRazorPay = async (req, res) => {
       throw new Error('Invalid payment signature');
     }
 
-    // Update order status
     await Order.findByIdAndUpdate(orderId, {
       orderStatus: 'processing',
       paymentStatus: 'paid'
     });
 
-    // Update product stock and clear cart (reusing your existing logic)
     const order = await Order.findById(orderId);
     for (const item of order.items) {
       await ProductVariant.findByIdAndUpdate(item.variantId, {

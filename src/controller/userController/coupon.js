@@ -33,7 +33,6 @@ const applyCoupon = async (req, res) => {
     if (!coupon) {
       return res.status(400).json({ message: "Invalid coupon code" });
     }
-    // Validate date range
     const currentDate = new Date();
     if (coupon.validFrom > currentDate) {
       return res.status(400).json({ message: "Coupon is not yet active" });
@@ -41,13 +40,11 @@ const applyCoupon = async (req, res) => {
     if (coupon.validUntil < currentDate) {
       return res.status(400).json({ message: "Coupon has expired" });
     }
-    // Validate minimum purchase
     if (cartTotal < coupon.minimumPurchase) {
       return res.status(400).json({
         message: `Minimum purchase amount of ₹${coupon.minimumPurchase} required`,
       });
     }
-    // Check user's usage of this coupon
     const userUsage = coupon.usedBy.find(
       (usage) => usage.userId.toString() === userId.toString()
     );
@@ -59,13 +56,11 @@ const applyCoupon = async (req, res) => {
         });
       }
     }
-    // Calculate discount
     let discountAmount =
       coupon.discountType === "percentage"
         ? (cartTotal * coupon.discountAmount) / 100
         : coupon.discountAmount;
 
-    // Apply max discount if specified
     if (coupon.maxDiscount && discountAmount > coupon.maxDiscount) {
       discountAmount = coupon.maxDiscount;
     }
@@ -93,7 +88,7 @@ const removeCoupon = async (req, res) => {
       return res.status(400).json({ message: "Coupon code is required" });
     }
 
-    // Find the coupon by code
+    
     const coupon = await Coupon.findOne({
       name: couponCode.toUpperCase(),
       isActive: true,
@@ -105,7 +100,6 @@ const removeCoupon = async (req, res) => {
         .json({ message: "Coupon not found or already inactive" });
     }
 
-    // Optional: Decrease the used count if you want to free up one usage for this coupon
     if (coupon.usedCount > 0) {
       coupon.usedCount -= 1;
       await coupon.save();
