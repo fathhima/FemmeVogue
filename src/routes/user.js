@@ -55,6 +55,8 @@ router.post('/login/reset-password',handleOtpAccess,user.resetPassword)
 
 router.get('/shop',user.shop)
 
+router.post('/shop/wishlist/toggle/:id',checkSession,user.addToWishlist)
+
 router.get('/product-detail/:id',user.detail)
 
 router.get('/profile',checkSession,User.profile)
@@ -82,6 +84,8 @@ router.post('/profile/orders/:orderId/products/:productId/cancel',checkSession,U
 router.post('/profile/orders/:id/return',checkSession,User.returnOrder)
 
 router.get('/profile/wishlist',checkSession,User.wishlist)
+
+router.delete('/profile/wishlist/:id',checkSession,User.removeWishlist)
 
 router.post('/add-to-cart',checkSession,cart.addToCart)
 

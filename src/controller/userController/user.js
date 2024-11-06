@@ -408,6 +408,61 @@ const shop = async (req, res) => {
   }
 };
 
+const addToWishlist = async (req, res) => {
+  try {
+      if (!req.session.user) {
+          return res.status(401).json({
+              success: false,
+              message: 'Please log in first'
+          });
+      }
+
+      const userId = req.session.user._id;
+      const productId = req.params.id;
+      const user = await User.findById(userId);
+      
+      if (!user) {
+          return res.status(404).json({
+              success: false,
+              message: 'User not found'
+          });
+      }
+
+      const wishlistItem = user.wishlist.find(
+          item => item.product.toString() === productId
+      );
+
+      let added = false;
+
+      if (wishlistItem) {
+          user.wishlist = user.wishlist.filter(
+              item => item.product.toString() !== productId
+          );
+      } else {
+          user.wishlist.push({
+              product: productId,
+              addedAt: new Date()
+          });
+          added = true;
+      }
+
+      await user.save();
+
+      res.json({
+          success: true,
+          added,
+          message: added ? 'Added to wishlist' : 'Removed from wishlist'
+      });
+
+  } catch (error) {
+      console.log(error)
+      res.status(500).json({
+          success: false,
+          message: 'Failed to update wishlist'
+      });
+  }
+};
+
 const detail = async (req, res) => {
   try {
     const user = req.session.user;
@@ -499,6 +554,7 @@ module.exports = {
   loadResetPassword,
   resetPassword,
   shop,
+  addToWishlist,
   detail,
   logout,
 };

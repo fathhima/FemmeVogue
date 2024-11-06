@@ -52,8 +52,14 @@ const userSchema = new mongoose.Schema({
         ref: 'Address'
     }],
     wishlist: [{
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'Product'
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'Product'
+        },
+        addedAt: {
+            type: Date,
+            default: Date.now
+        }
     }]
 },
 {

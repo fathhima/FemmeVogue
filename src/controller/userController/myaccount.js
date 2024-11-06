@@ -372,12 +372,67 @@ const returnOrder = async(req,res) => {
 
 const wishlist = async (req, res) => {
   try {
-    const userId = req.session.user._id;
-    const user = await User.findById(userId).populate('wishlist')
-    res.render("user/layout", { page: "wishlist", user });
+      const userId = req.session.user._id;
+      
+      const user = await User.findById(userId)
+          .populate({
+              path: 'wishlist.product',
+              select: 'name brandName description image originalPrice finalPrice hasOffer discountAmount'
+          });
+
+      if (!user) {
+          req.flash('error', 'User not found');
+          return res.redirect('/');
+      }
+
+      const wishlistItems = user.wishlist.map(item => ({
+          ...item.product.toObject(),
+          addedAt: item.addedAt,
+          productId: item.product._id
+      }));
+
+      res.render("user/layout", { 
+          page: "wishlist", 
+          user,
+          wishlistItems,
+          isEmpty: wishlistItems.length === 0
+      });
+
   } catch (err) {
-    console.error(err);
-    res.status(400).send("something went wrong");
+      console.error('Wishlist Error:', err);
+      req.flash('error', 'Failed to load wishlist');
+      res.redirect('/');
+  }
+};
+
+const removeWishlist = async (req, res) => {
+  try {
+      const userId = req.session.user._id;
+      const productId = req.params.id;
+
+      const result = await User.updateOne(
+          { _id: userId },
+          { $pull: { wishlist: { product: productId } } }
+      );
+
+      if (result.modifiedCount > 0) {
+          return res.json({
+              success: true,
+              message: 'Product removed from wishlist'
+          });
+      } else {
+          return res.status(404).json({
+              success: false,
+              message: 'Product not found in wishlist'
+          });
+      }
+
+  } catch (err) {
+      console.error('Remove from Wishlist Error:', err);
+      res.status(500).json({
+          success: false,
+          message: 'Failed to remove product from wishlist'
+      });
   }
 };
 
@@ -395,4 +450,5 @@ module.exports = {
   productCancel,
   returnOrder,
   wishlist,
+  removeWishlist,
 };
