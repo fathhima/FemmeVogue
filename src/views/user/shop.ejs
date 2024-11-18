@@ -2,46 +2,45 @@
 <html lang="en">
 
 <head>
-	<title>Product</title>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!--===============================================================================================-->
-	<link rel="icon" type="image/png" href="images/icons/favicon.png" />
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/animate/animate.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/css-hamburgers/hamburgers.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/animsition/css/animsition.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/select2/select2.min.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/daterangepicker/daterangepicker.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/slick/slick.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/MagnificPopup/magnific-popup.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/vendor/perfect-scrollbar/perfect-scrollbar.css">
-	<!--===============================================================================================-->
-	<link rel="stylesheet" type="text/css" href="/css/util.css">
-	<link rel="stylesheet" type="text/css" href="/css/main.css">
-	<!--===============================================================================================-->
+    <title>Product</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--===============================================================================================-->
+    <link rel="icon" type="image/png" href="images/icons/favicon.png" />
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/bootstrap/css/bootstrap.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/fonts/font-awesome-4.7.0/css/font-awesome.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/fonts/iconic/css/material-design-iconic-font.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/fonts/linearicons-v1.0.0/icon-font.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/animate/animate.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/css-hamburgers/hamburgers.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/animsition/css/animsition.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/select2/select2.min.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/daterangepicker/daterangepicker.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/slick/slick.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/MagnificPopup/magnific-popup.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/vendor/perfect-scrollbar/perfect-scrollbar.css">
+    <!--===============================================================================================-->
+    <link rel="stylesheet" type="text/css" href="/css/util.css">
+    <link rel="stylesheet" type="text/css" href="/css/main.css">
+    <!--===============================================================================================-->
 
-	<!-- In your head section -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-	<style>
+    <style>
         .main-container {
             display: flex;
             gap: 2rem;
@@ -53,8 +52,8 @@
             padding: 1rem;
             background: #fff;
             border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-			margin-top: 100px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            margin-top: 100px;
         }
 
         .filter-section {
@@ -137,7 +136,7 @@
 
         .products-container {
             flex: 1;
-			margin-top: 100px;
+            margin-top: 100px;
         }
 
         /* .card-container {
@@ -181,157 +180,157 @@
             align-items: center;
             gap: 0.5rem;
         }
-		.filter-section {
-        border-bottom: 1px solid #eee;
-        padding-bottom: 1.5rem;
-        margin-bottom: 1.5rem;
-    }
 
-    .filter-section:last-child {
-        border-bottom: none;
-        padding-bottom: 0;
-    }
+        .filter-section {
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
 
-    .category-search,
-    .brand-search {
-        width: 100%;
-        padding: 0.5rem;
-        border: 1px solid #ddd;
-        border-radius: 4px;
-        margin-bottom: 1rem;
-        font-size: 0.9rem;
-    }
+        .filter-section:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
 
-    .checkbox-label {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 0.25rem 0;
-        cursor: pointer;
-        transition: background-color 0.2s;
-    }
+        .category-search,
+        .brand-search {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+        }
 
-    .checkbox-label:hover {
-        background-color: #f5f5f5;
-    }
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
 
-    .checkbox-label input[type="checkbox"] {
-        margin-right: 8px;
-    }
+        .checkbox-label:hover {
+            background-color: #f5f5f5;
+        }
 
-    .count {
-        color: #666;
-        font-size: 0.85rem;
-        margin-left: auto;
-    }
+        .checkbox-label input[type="checkbox"] {
+            margin-right: 8px;
+        }
 
-    .category-list,
-    .brand-list {
-        max-height: 250px;
-        overflow-y: auto;
-        scrollbar-width: thin;
-        scrollbar-color: #888 #f1f1f1;
-    }
+        .count {
+            color: #666;
+            font-size: 0.85rem;
+            margin-left: auto;
+        }
 
-    .category-list::-webkit-scrollbar,
-    .brand-list::-webkit-scrollbar {
-        width: 6px;
-    }
+        .category-list,
+        .brand-list {
+            max-height: 250px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
 
-    .category-list::-webkit-scrollbar-track,
-    .brand-list::-webkit-scrollbar-track {
-        background: #f1f1f1;
-        border-radius: 3px;
-    }
+        .category-list::-webkit-scrollbar,
+        .brand-list::-webkit-scrollbar {
+            width: 6px;
+        }
 
-    .category-list::-webkit-scrollbar-thumb,
-    .brand-list::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 3px;
-    }
+        .category-list::-webkit-scrollbar-track,
+        .brand-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
 
-    .checkbox-group label {
-        display: flex;
-        align-items: center;
-        padding: 6px 0;
-    }
+        .category-list::-webkit-scrollbar-thumb,
+        .brand-list::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .checkbox-group label {
+            display: flex;
+            align-items: center;
+            padding: 6px 0;
+        }
     </style>
 
 </head>
 
 <body class="animsition">
 
-	<!-- Navbar -->
-	<%-include("partials/navbar")%>
+    <!-- Navbar -->
+    <%-include("partials/navbar")%>
 
-	<div class="main-container">
-        <!-- Filter Sidebar -->
-		<aside class="filter-sidebar">
-			<!-- Categories Section -->
-			<div class="filter-section">
-				<h3 class="filter-title">Categories</h3>
-				<input type="text" class="category-search" placeholder="Search categories..." id="categorySearch">
-				<div class="category-list checkbox-group">
-					<% const categories = [...new Set(Products.map(p => p.category.name))].sort() %>
-					<% categories.forEach(category => { %>
-						<label class="checkbox-label">
-							<input type="checkbox" name="category" value="<%= category %>">
-							<%= category %>
-							<% 
-								// Count products in each category
-								const count = Products.filter(p => p.category.name === category).length 
-							%>
-							<span class="count">(<%= count %>)</span>
-						</label>
-					<% }) %>
-				</div>
-			</div>
-		
-			<!-- Brands Section -->
-			<div class="filter-section">
-				<h3 class="filter-title">Brands</h3>
-				<input type="text" class="brand-search" placeholder="Search brands..." id="brandSearch">
-				<div class="brand-list checkbox-group" style="padding-right: 10px;">
-					<% const uniqueBrands = [...new Set(Products.map(p => p.brandName))].sort() %>
-					<% uniqueBrands.forEach(brand => { %>
-						<label class="checkbox-label">
-							<input type="checkbox" name="brand" value="<%= brand %>">
-							<%= brand %>
-							<% 
-								<!--Count products for each brand--> 
-								const count = Products.filter(p => p.brandName === brand).length 
-							%>
-							<span class="count">(<%= count %>)</span>
-						</label>
-					<% }) %>
-				</div>
-			</div>
-		
-			<!-- Price Range Section -->
-			<div class="filter-section">
-				<h3 class="filter-title">Price Range</h3>
-				<div class="price-ranges checkbox-group">
-					<label class="checkbox-label">
-						<input type="checkbox" name="price" value="0-500">
-						Below ₹500
-					</label>
-					<label class="checkbox-label">
-						<input type="checkbox" name="price" value="500-1000">
-						₹500 - ₹1,000
-					</label>
-					<label class="checkbox-label">
-						<input type="checkbox" name="price" value="1000-5000">
-						₹1,000 - ₹5,000
-					</label>
-					<label class="checkbox-label">
-						<input type="checkbox" name="price" value="5000+">
-						Above ₹5,000
-					</label>
-				</div>
-			</div>
-		
-			<!-- Colors Section -->
-			<!-- <div class="filter-section">
+        <div class="main-container">
+            <!-- Filter Sidebar -->
+            <aside class="filter-sidebar">
+                <!-- Categories Section -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Categories</h3>
+                    <input type="text" class="category-search" placeholder="Search categories..." id="categorySearch">
+                    <div class="category-list checkbox-group">
+                        <% const categories=[...new Set(Products.map(p=> p.category.name))].sort() %>
+                            <% Categories.forEach(category=> { %>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="category" value="<%= category %>">
+                                    <%= category.name %>
+                                        <% // Count products in each category 
+                                        const count=Products.filter(p=>
+                                            p.category.name === category).length
+                                            %>
+                                            <span class="count">(<%= count %>)</span>
+                                </label>
+                                <% }) %>
+                    </div>
+                </div>
+
+                <!-- Brands Section -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Brands</h3>
+                    <input type="text" class="brand-search" placeholder="Search brands..." id="brandSearch">
+                    <div class="brand-list checkbox-group" style="padding-right: 10px;">
+                        <% const uniqueBrands=[...new Set(Products.map(p=> p.brandName))].sort() %>
+                            <% uniqueBrands.forEach(brand=> { %>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" name="brand" value="<%= brand %>">
+                                    <%= brand %>
+                                        <% <!--Count products for each brand-->
+                                            const count = Products.filter(p => p.brandName === brand).length
+                                            %>
+                                            <span class="count">(<%= count %>)</span>
+                                </label>
+                                <% }) %>
+                    </div>
+                </div>
+
+                <!-- Price Range Section -->
+                <div class="filter-section">
+                    <h3 class="filter-title">Price Range</h3>
+                    <div class="price-ranges checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="price" value="0-500">
+                            Below ₹500
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="price" value="500-1000">
+                            ₹500 - ₹1,000
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="price" value="1000-5000">
+                            ₹1,000 - ₹5,000
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="price" value="5000+">
+                            Above ₹5,000
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Colors Section -->
+                <!-- <div class="filter-section">
 				<h3 class="filter-title">Colors</h3>
 				<div class="color-options">
 					<% const colors = ['#000000', '#4272d7', '#b3b3b3', '#00ad5f', '#fa4251', '#ffffff'] %>
@@ -345,694 +344,430 @@
 					<% }) %>
 				</div>
 			</div> -->
-		</aside>
+            </aside>
 
-        <!-- Main Content -->
-        <main class="products-container">
-            <!-- Search and Sort -->
-            <div class="search-sort-container">
-                <div class="search-container">
-                    <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
-                </div>
-                <div class="sort-container">
-                    <select class="sort-select" id="sortSelect">
-                        <option value="">Sort By</option>
-                        <option value="popularity">Popularity</option>
-                        <option value="price-low">Price: Low to High</option>
-                        <option value="price-high">Price: High to Low</option>
-                        <option value="new">New Arrivals</option>
-                        <option value="a-z">Name: A to Z</option>
-                        <option value="z-a">Name: Z to A</option>
-                    </select>
-                </div>
-            </div>
-
-            <!-- Active Filters -->
-            <div class="active-filters" id="activeFilters"></div>
-
-            <!-- Products Grid -->
-            <div class="card-container" id="productsGrid">
-                <% Products.forEach(product => { %>
-                    <div class="card" 
-                         data-category="<%= product.category.name %>"
-                         data-brand="<%= product.brandName %>"
-                         data-price="<%= product.finalPrice || product.originalPrice %>"
-                         data-name="<%= product.brandName %>">
-                        <a href="/product-detail/<%= product._id%>">
-                            <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
-                            <div class="card-content">
-                                <h3 class="card-title"><%= product.brandName %></h3>
-                                <p class="card-description"><%= product.description %></p>
-                                <div class="price-wishlist">
-                                    <div class="price-container">
-                                        <% if (product.hasOffer) { %>
-                                            <p class="card-price">
-                                                Rs. <%= Math.floor(product.finalPrice) %>
-                                                <span class="original-price">Rs. <%= Math.floor(product.originalPrice) %></span>
-                                                <% const discountPercent = Math.floor((product.discountAmount / product.originalPrice) * 100) %>
-                                                <span class="discount-percent">-<%= discountPercent %>%</span>
-                                            </p>
-                                        <% } else { %>
-                                            <p class="card-price">Rs. <%= Math.floor(product.originalPrice) %></p>
-                                        <% } %>
-                                    </div>
-                                    <button onclick="toggleWishlist('672862b9b7b7a12a4202f516', event)" class="wishlist-btn">
-                                        <i class="wishlist-icon far fa-heart"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </a>
+            <!-- Main Content -->
+            <main class="products-container">
+                <!-- Search and Sort -->
+                <div class="search-sort-container">
+                    <div class="search-container">
+                        <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
                     </div>
-                <% }); %>
-            </div>
-        </main>
-    </div>
+                    <div class="sort-container">
+                        <select class="sort-select" id="sortSelect">
+                            <option value="">Sort By</option>
+                            <option value="popularity">Popularity</option>
+                            <option value="price-low">Price: Low to High</option>
+                            <option value="price-high">Price: High to Low</option>
+                            <option value="new">New Arrivals</option>
+                            <option value="a-z">Name: A to Z</option>
+                            <option value="z-a">Name: Z to A</option>
+                        </select>
+                    </div>
+                </div>
 
-				<script>
-					document.addEventListener('DOMContentLoaded', function() {
-            const productsGrid = document.getElementById('productsGrid');
-            const productSearch = document.getElementById('productSearch');
-            const brandSearch = document.getElementById('brandSearch');
-            const sortSelect = document.getElementById('sortSelect');
-            const activeFilters = document.getElementById('activeFilters');
-			// Add category search functionality
-			const categorySearch = document.getElementById('categorySearch');
-        categorySearch.addEventListener('input', (e) => {
-            const searchTerm = e.target.value.toLowerCase();
-            const categoryLabels = document.querySelectorAll('.category-list .checkbox-label');
-            
-            categoryLabels.forEach(label => {
-                const categoryName = label.textContent.split('(')[0].trim().toLowerCase();
-                label.style.display = categoryName.includes(searchTerm) ? '' : 'none';
-            });
-        });
+                <button class="clear-filters-btn" style="display: none;">Clear All Filters</button>
 
-        // Add categories to active filters
-        const categoryCheckboxes = document.querySelectorAll('input[name="category"]');
-        categoryCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', (e) => {
-                if (e.target.checked) {
-                    activeFilterValues.categories = activeFilterValues.categories || [];
-                    activeFilterValues.categories.push(e.target.value);
-                } else {
-                    activeFilterValues.categories = activeFilterValues.categories.filter(c => c !== e.target.value);
-                }
-                updateActiveFilters();
-                filterProducts();
-            });
-        });
-            
-            let activeFilterValues = {
-                brands: [],
-                prices: [],
-                colors: [],
-                search: ''
-            };
+                <!-- Active Filters -->
+                <div class="active-filters" id="activeFilters"></div>
 
-            // Update active filters display
-            function updateActiveFilters() {
-                activeFilters.innerHTML = '';
-                
-                // Add search filter if exists
-                if (activeFilterValues.search) {
-                    addFilterTag('Search: ' + activeFilterValues.search, 'search');
-                }
-                
-                // Add brand filters
-                activeFilterValues.brands.forEach(brand => {
-                    addFilterTag('Brand: ' + brand, 'brand-' + brand);
-                });
-                
-                // Add price filters
-                activeFilterValues.prices.forEach(price => {
-                    addFilterTag('Price: ' + price, 'price-' + price);
-                });
-                
-                // Add color filters
-                activeFilterValues.colors.forEach(color => {
-                    addFilterTag('Color: ' + color, 'color-' + color);
-                });
-            }
+                <!-- Products Grid -->
+                <div class="card-container" id="productsGrid">
+                    <% Products.forEach(product=> { %>
+                        <div class="card" data-category="<%= product.category.name %>"
+                            data-brand="<%= product.brandName %>"
+                            data-price="<%= product.finalPrice || product.originalPrice %>"
+                            data-name="<%= product.brandName %>">
+                            <a href="/product-detail/<%= product._id%>">
+                                <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+                                <div class="card-content">
+                                    <h3 class="card-title">
+                                        <%= product.brandName %>
+                                    </h3>
+                                    <p class="card-description">
+                                        <%= product.description %>
+                                    </p>
+                                    <div class="price-wishlist">
+                                        <div class="price-container">
+                                            <% if (product.hasOffer) { %>
+                                                <p class="card-price">
+                                                    Rs. <%= Math.floor(product.finalPrice) %>
+                                                        <span class="original-price">Rs. <%=
+                                                                Math.floor(product.originalPrice) %></span>
+                                                        <% const discountPercent=Math.floor((product.discountAmount /
+                                                            product.originalPrice) * 100) %>
+                                                            <span class="discount-percent">-<%= discountPercent %>
+                                                                    %</span>
+                                                </p>
+                                                <% } else { %>
+                                                    <p class="card-price">Rs. <%= Math.floor(product.originalPrice) %>
+                                                    </p>
+                                                    <% } %>
+                                        </div>
+                                        <button onclick="toggleWishlist('<%= product._id %>', event)"
+                                            class="wishlist-btn" data-product-id="<%= product._id %>">
+                                            <i class="wishlist-icon far fa-heart"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </a>
+                        </div>
+                        <% }); %>
+                </div>
+            </main>
+        </div>
 
-            function addFilterTag(text, id) {
-                const tag = document.createElement('div');
-                tag.className = 'filter-tag';
-                tag.innerHTML = `
-                    ${text}
-                    <button onclick="removeFilter('${id}')">&times;</button>
-                `;
-                activeFilters.appendChild(tag);
-            }
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-            // Filter products based on all active filters
-            function filterProducts() {
-                const products = productsGrid.getElementsByClassName('card');
-                
-                Array.from(products).forEach(product => {
-					const category = product.dataset.category;
-                    const brand = product.dataset.brand;
-                    const price = parseFloat(product.dataset.price);
-                    const name = product.dataset.name.toLowerCase();
-                    
-                    let visible = true;
 
-					// Check category filter
-					if (activeFilterValues.categories && activeFilterValues.categories.length && 
-                    !activeFilterValues.categories.includes(category)) {
-                    visible = false;
-                }
-                    
-                    // Check brand filter
-                    if (activeFilterValues.brands.length && !activeFilterValues.brands.includes(brand)) {
-                        visible = false;
-                    }
-                    
-                    // Check price filter
-                    if (activeFilterValues.prices.length) {
-                        const matchesPrice = activeFilterValues.prices.some(range => {
-                            const [min, max] = range.split('-').map(Number);
-                            return price >= min && (max ? price <= max : true);
-                        });
-                        if (!matchesPrice) visible = false;
-                    }
-                    
-                    // Check search
-                    if (activeFilterValues.search && !name.includes(activeFilterValues.search.toLowerCase())) {
-                        visible = false;
-                    }
-                    
-                    product.style.display = visible ? '' : 'none';
-                });
-            }
+        <script>
 
-            // Sort products
-            function sortProducts(sortBy) {
-                const products = Array.from(productsGrid.getElementsByClassName('card'));
-                
-                products.sort((a, b) => {
-                    switch(sortBy) {
-                        case 'price-low':
-                            return parseFloat(a.dataset.price) - parseFloat(b.dataset.price);
-                        case 'price-high':
-                            return parseFloat(b.dataset.price) - parseFloat(a.dataset.price);
-                        case 'a-z':
-                            return a.dataset.name.localeCompare(b.dataset.name);
-                        case 'z-a':
-                            return b.dataset.name.localeCompare(a.dataset.name);
-                        // Add other sort cases as needed
-                        default:
-                            return 0;
-                    }
-                });
-                
-                products.forEach(product => productsGrid.appendChild(product));
-            }
+            document.addEventListener('DOMContentLoaded', function () {
+                const productsGrid = document.getElementById('productsGrid');
+                const productSearch = document.getElementById('productSearch');
+                const categorySearch = document.getElementById('categorySearch');
+                const brandSearch = document.getElementById('brandSearch');
+                const sortSelect = document.getElementById('sortSelect');
+                const activeFilters = document.getElementById('activeFilters');
 
-            // Event Listeners
-            productSearch.addEventListener('input', (e) => {
-                activeFilterValues.search = e.target.value;
-                updateActiveFilters();
-                filterProducts();
-            });
-
-            brandSearch.addEventListener('input', (e) => {
-                const searchTerm = e.target.value.toLowerCase();
-                const brandCheckboxes = document.querySelectorAll('.brand-list .checkbox-label');
-                
-                brandCheckboxes.forEach(label => {
-                    const brandName = label.textContent.trim().toLowerCase();
-                    label.style.display = brandName.includes(searchTerm) ? '' : 'none';
-                });
-            });
-
-            sortSelect.addEventListener('change', (e) => {
-                sortProducts(e.target.value);
-            });
-
-            // Brand checkboxes
-            document.querySelectorAll('input[name="brand"]').forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        activeFilterValues.brands.push(e.target.value);
-                    } else {
-                        activeFilterValues.brands = activeFilterValues.brands.filter(b => b !== e.target.value);
-                    }
-                    updateActiveFilters();
-                    filterProducts();
-                });
-            });
-
-            // Price range checkboxes
-            document.querySelectorAll('input[name="price"]').forEach(checkbox => {
-                checkbox.addEventListener('change', (e) => {
-                    if (e.target.checked) {
-                        activeFilterValues.prices.push(e.target.value);
-                    } else {
-                        activeFilterValues.prices = activeFilterValues.prices.filter(p => p !== e.target.value);
-                    }
-                    updateActiveFilters();
-                    filterProducts();
-                });
-            });
-
-            // Color options
-            document.querySelectorAll('.color-option').forEach(color => {
-                color.addEventListener('click', (e) => {
-                    const colorName = e.target.dataset.color;
-                    e.target.classList.toggle('selected');
-                    
-                    if (e.target.classList.contains('selected')) {
-                        activeFilterValues.colors.push(colorName);
-                    } else {
-                        activeFilterValues.colors = activeFilterValues.colors.filter(c => c !== colorName);
-                    }
-                    updateActiveFilters();
-                    filterProducts();
-                });
-            });
-
-            // Remove filter function
-            window.removeFilter = function(filterId) {
-				if (filterId.startsWith('category-')) {
-                const category = filterId.replace('category-', '');
-                activeFilterValues.categories = activeFilterValues.categories.filter(c => c !== category);
-                document.querySelector(`input[name="category"][value="${category}"]`).checked = false;
-            } else {
-                originalRemoveFilter(filterId);
-            }
-                if (filterId.startsWith('brand-')) {
-                    const brand = filterId.replace('brand-', '');
-                    activeFilterValues.brands = activeFilterValues.brands.filter(b => b !== brand);
-                    // Uncheck corresponding checkbox
-                    document.querySelector(`input[name="brand"][value="${brand}"]`).checked = false;
-                } else if (filterId.startsWith('price-')) {
-                    const price = filterId.replace('price-', '');
-                    activeFilterValues.prices = activeFilterValues.prices.filter(p => p !== price);
-                    // Uncheck corresponding checkbox
-                    document.querySelector(`input[name="price"][value="${price}"]`).checked = false;
-                } else if (filterId.startsWith('color-')) {
-                    const color = filterId.replace('color-', '');
-                    activeFilterValues.colors = activeFilterValues.colors.filter(c => c !== color);
-                    // Remove selected class from color option
-                    document.querySelector(`.color-option[data-color="${color}"]`).classList.remove('selected');
-                } else if (filterId === 'search') {
-                    activeFilterValues.search = '';
-                    productSearch.value = '';
-                }
-                
-                updateActiveFilters();
-                filterProducts();
-            };
-
-            // Clear all filters
-            function clearAllFilters() {
-                activeFilterValues = {
+                let currentFilters = {
+                    search: '',
+                    category: [],
                     brands: [],
-                    prices: [],
-                    colors: [],
-                    search: ''
+                    priceRange: [],
+                    sort: '',
+                    page: 1
                 };
-                
-                // Reset all form elements
-                document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                });
-                
-                document.querySelectorAll('.color-option').forEach(color => {
-                    color.classList.remove('selected');
-                });
-                
-                productSearch.value = '';
-                sortSelect.value = '';
-                
-                updateActiveFilters();
-                filterProducts();
-            }
 
-            // Add clear all filters button
-            const clearButton = document.createElement('button');
-            clearButton.className = 'clear-filters-btn';
-            clearButton.textContent = 'Clear All Filters';
-            clearButton.style.cssText = `
-                padding: 0.5rem 1rem;
-                background: #f0f0f0;
-                border: none;
-                border-radius: 4px;
-                cursor: pointer;
-                margin-bottom: 1rem;
-                display: none;
-            `;
-            
-            activeFilters.parentNode.insertBefore(clearButton, activeFilters);
+                // Debounce function
+                function debounce(func, wait) {
+                    let timeout;
+                    return function executedFunction(...args) {
+                        const later = () => {
+                            clearTimeout(timeout);
+                            func(...args);
+                        };
+                        clearTimeout(timeout);
+                        timeout = setTimeout(later, wait);
+                    };
+                }
 
-            // Show/hide clear button based on active filters
-            function updateClearButton() {
-                const hasActiveFilters = 
-                    activeFilterValues.brands.length > 0 ||
-                    activeFilterValues.prices.length > 0 ||
-                    activeFilterValues.colors.length > 0 ||
-                    activeFilterValues.search !== '';
-                
-                clearButton.style.display = hasActiveFilters ? 'block' : 'none';
-            }
+                // Fetch products with filters using axios
+                async function fetchProducts(showLoader = true) {
+                    if (showLoader) {
+                        productsGrid.innerHTML = '<div class="loader">Loading...</div>';
+                    }
 
-            clearButton.addEventListener('click', clearAllFilters);
+                    const queryParams = {};
+                    Object.entries(currentFilters).forEach(([key, value]) => {
+                        if (Array.isArray(value) && value.length > 0) {
+                            queryParams[key] = value.join(',');
+                        } else if (value && !Array.isArray(value)) {
+                            queryParams[key] = value;
+                        }
+                    });
 
-            // Update clear button when filters change
-            const originalUpdateActiveFilters = updateActiveFilters;
-            updateActiveFilters = function() {
-                originalUpdateActiveFilters();
-                updateClearButton();
-            };
-
-            // Mobile responsiveness
-            function handleMobileLayout() {
-                const filterSidebar = document.querySelector('.filter-sidebar');
-                const mainContainer = document.querySelector('.main-container');
-                
-                if (window.innerWidth < 768) {
-                    // Add mobile-specific classes and styles
-                    filterSidebar.classList.add('mobile-filters');
-                    
-                    // Create filter toggle button for mobile
-                    if (!document.querySelector('.filter-toggle')) {
-                        const filterToggle = document.createElement('button');
-                        filterToggle.className = 'filter-toggle';
-                        filterToggle.innerHTML = '<i class="fas fa-filter"></i> Filters';
-                        filterToggle.style.cssText = `
-                            position: fixed;
-                            bottom: 20px;
-                            right: 20px;
-                            z-index: 1000;
-                            padding: 10px 20px;
-                            background: #000;
-                            color: #fff;
-                            border: none;
-                            border-radius: 25px;
-                            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-                        `;
-                        
-                        document.body.appendChild(filterToggle);
-                        
-                        filterToggle.addEventListener('click', () => {
-                            filterSidebar.classList.toggle('show-mobile');
+                    try {
+                        const response = await axios.get('/shop', {
+                            params: queryParams,
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest'
+                            }
                         });
-                    }
-                } else {
-                    // Remove mobile-specific classes and styles
-                    filterSidebar.classList.remove('mobile-filters', 'show-mobile');
-                    const filterToggle = document.querySelector('.filter-toggle');
-                    if (filterToggle) {
-                        filterToggle.remove();
-                    }
-                }
-            }
 
-            // Add mobile styles
-            const mobileStyles = document.createElement('style');
-            mobileStyles.textContent = `
-                @media (max-width: 768px) {
-                    .main-container {
-                        flex-direction: column;
-                        padding: 1rem;
-                    }
-
-                    .mobile-filters {
-                        position: fixed;
-                        top: 0;
-                        left: -280px;
-                        height: 100vh;
-                        z-index: 1000;
-                        background: #fff;
-                        transition: left 0.3s ease;
-                        overflow-y: auto;
-                    }
-
-                    .mobile-filters.show-mobile {
-                        left: 0;
-                    }
-
-                    .search-sort-container {
-                        flex-direction: column;
-                        gap: 1rem;
-                    }
-
-                    .search-container,
-                    .sort-container {
-                        width: 100%;
-                        max-width: none;
-                    }
-
-                    .card-container {
-                        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-                        gap: 1rem;
+                        const data = response.data;
+                        updateProductsGrid(data.Products);
+                        // updatePagination(data.pagination);
+                        updateURL();
+                    } catch (error) {
+                        console.error('Error fetching products:', error);
+                        productsGrid.innerHTML = '<div class="error">Error loading products. Please try again.</div>';
                     }
                 }
-            `;
-            document.head.appendChild(mobileStyles);
 
-            // Listen for window resize
-            window.addEventListener('resize', handleMobileLayout);
-            
-            // Initial mobile layout check
-            handleMobileLayout();
-        });
-
-        async function toggleWishlist(productId, event) {
-    try {
-        // Prevent any parent links from triggering
-        event.preventDefault();
-        event.stopPropagation();
-        
-        // Find the icon element
-        const button = event.currentTarget;
-        const icon = button.querySelector('.wishlist-icon');
-        
-        const response = await axios.post(`/shop/wishlist/toggle/${productId}`);
-        
-        if (response.data.success) {
-            // Toggle the icon based on the response
-            if (response.data.added) {
-                icon.classList.remove('far');
-                icon.classList.add('fas');
-            } else {
-                icon.classList.remove('fas');
-                icon.classList.add('far');
-            }
-            
-            // Show success message
-            Swal.fire({
-                title: response.data.message, // Use the message from the server
-                icon: 'success',
-                timer: 1500,
-                showConfirmButton: false,
-                position: 'top-end',
-                toast: true
-            });
-            
-            // Update wishlist count
-            if (typeof updateWishlistCount === 'function') {
-                updateWishlistCount();
-            }
-        } else {
-            throw new Error(response.data.message || 'Failed to update wishlist');
-        }
-    } catch (error) {
-        console.error('Error details:', error);
-
-        if (error.response?.status === 401) {
-            Swal.fire({
-                title: 'Please Log In',
-                text: 'You need to be logged in to add items to your wishlist',
-                icon: 'info',
-                showCancelButton: true,
-                confirmButtonText: 'Log In',
-                cancelButtonText: 'Cancel'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = '/login';
+                // Update products grid
+                function updateProductsGrid(products) {
+                    console.log(products)
+                    productsGrid.innerHTML = products.map(product => `
+            <div class="card">
+                <img src="${product.image[0]}" alt="${product.name}">
+                <div class="card-content">
+                    <h3>${product.brandName}</h3>
+                    <p class="brand">${product.description}</p>
+                    <div class="price">
+                        <span class="final-price">₹${product.finalPrice}</span>
+                        ${product.hasOffer ? `<span class="original-price">₹${product.originalPrice}</span>` : ''}
+                    </div>
+                </div>
+            </div>
+        `).join('');
                 }
+
+                // Update active filters display
+                function updateActiveFilters() {
+                    activeFilters.innerHTML = '';
+
+                    if (currentFilters.search) {
+                        addFilterTag('Search: ' + currentFilters.search, 'search');
+                    }
+
+                    currentFilters.category.forEach(category => {
+                        addFilterTag('Category: ' + category, 'category-' + category);
+                    });
+
+                    currentFilters.brands.forEach(brand => {
+                        addFilterTag('Brand: ' + brand, 'brand-' + brand);
+                    });
+
+                    currentFilters.priceRange.forEach(range => {
+                        addFilterTag('Price: ' + formatPriceRange(range), 'price-' + range);
+                    });
+
+                    // Show/hide clear all button
+                    const clearButton = document.querySelector('.clear-filters-btn');
+                    const hasFilters = Object.values(currentFilters).some(value =>
+                        Array.isArray(value) ? value.length > 0 : Boolean(value)
+                    );
+                    clearButton.style.display = hasFilters ? 'block' : 'none';
+                }
+
+                // Format price range for display
+                function formatPriceRange(range) {
+                    if (range === '5000+') return 'Above ₹5,000';
+                    const [min, max] = range.split('-');
+                    return `₹${min} - ₹${max}`;
+                }
+
+                // Add filter tag
+                function addFilterTag(text, id) {
+                    const tag = document.createElement('div');
+                    tag.className = 'filter-tag';
+                    tag.innerHTML = `
+            ${text}
+            <button onclick="removeFilter('${id}')">&times;</button>
+        `;
+                    activeFilters.appendChild(tag);
+                }
+
+                // Remove filter
+                window.removeFilter = function (filterId) {
+                    if (filterId === 'search') {
+                        currentFilters.search = '';
+                        productSearch.value = '';
+                    } else {
+                        const [type, value] = filterId.split('-');
+                        const filterKey = type + 's';
+                        currentFilters[filterKey] = currentFilters[filterKey].filter(item => item !== value);
+
+                        // Uncheck corresponding checkbox
+                        const checkbox = document.querySelector(`input[name="${type}"][value="${value}"]`);
+                        if (checkbox) checkbox.checked = false;
+                    }
+
+                    currentFilters.page = 1;
+                    updateActiveFilters();
+                    fetchProducts();
+                };
+
+                // Event Listeners
+                productSearch.addEventListener('input', debounce(() => {
+                    currentFilters.search = productSearch.value;
+                    currentFilters.page = 1;
+                    fetchProducts();
+                }, 300));
+
+                // Category search
+                categorySearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('.category-list .checkbox-label').forEach(label => {
+                        const categoryName = label.textContent.split('(')[0].trim().toLowerCase();
+                        label.style.display = categoryName.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+                
+                // Brand search
+                brandSearch.addEventListener('input', (e) => {
+                    const searchTerm = e.target.value.toLowerCase();
+                    document.querySelectorAll('.brand-list .checkbox-label').forEach(label => {
+                        const brandName = label.textContent.split('(')[0].trim().toLowerCase();
+                        label.style.display = brandName.includes(searchTerm) ? '' : 'none';
+                    });
+                });
+
+                // Sort select
+                sortSelect.addEventListener('change', () => {
+                    currentFilters.sort = sortSelect.value;
+                    currentFilters.page = 1;
+                    fetchProducts();
+                });
+
+                // Category checkboxes
+                document.querySelectorAll('input[name="category"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', e => {
+                        if (e.target.checked) {
+                            currentFilters.category.push(e.target.value);
+                        } else {
+                            currentFilters.category = currentFilters.category
+                                .filter(c => c !== e.target.value);
+                        }
+                        currentFilters.page = 1;
+                        updateActiveFilters();
+                        fetchProducts();
+                    });
+                });
+
+                // Brand checkboxes
+                document.querySelectorAll('input[name="brand"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', e => {
+                        if (e.target.checked) {
+                            currentFilters.brands.push(e.target.value);
+                        } else {
+                            currentFilters.brands = currentFilters.brands
+                                .filter(b => b !== e.target.value);
+                        }
+                        currentFilters.page = 1;
+                        updateActiveFilters();
+                        fetchProducts();
+                    });
+                });
+
+                // Price range checkboxes
+                document.querySelectorAll('input[name="price"]').forEach(checkbox => {
+                    checkbox.addEventListener('change', e => {
+                        if (e.target.checked) {
+                            currentFilters.priceRange.push(e.target.value);
+                        } else {
+                            currentFilters.priceRange = currentFilters.priceRange
+                                .filter(p => p !== e.target.value);
+                        }
+                        currentFilters.page = 1;
+                        updateActiveFilters();
+                        fetchProducts();
+                    });
+                });
+
+                // Update URL with current filters
+                function updateURL() {
+                    const url = new URL(window.location);
+                    Object.entries(currentFilters).forEach(([key, value]) => {
+                        if (Array.isArray(value) && value.length > 0) {
+                            url.searchParams.set(key, value.join(','));
+                        } else if (value && !Array.isArray(value)) {
+                            url.searchParams.set(key, value);
+                        } else {
+                            url.searchParams.delete(key);
+                        }
+                    });
+                    window.history.pushState({}, '', url);
+                }
+
+                // Initialize filters from URL
+                function initializeFiltersFromURL() {
+                    const params = new URLSearchParams(window.location.search);
+
+                    params.forEach((value, key) => {
+                        if (Array.isArray(currentFilters[key])) {
+                            currentFilters[key] = value.split(',');
+                            // Check corresponding checkboxes
+                            currentFilters[key].forEach(val => {
+                                const checkbox = document.querySelector(`input[name="${key.slice(0, -1)}"][value="${val}"]`);
+                                if (checkbox) checkbox.checked = true;
+                            });
+                        } else {
+                            currentFilters[key] = value;
+                            if (key === 'search') {
+                                productSearch.value = value;
+                            } else if (key === 'sort') {
+                                sortSelect.value = value;
+                            }
+                        }
+                    });
+
+                    updateActiveFilters();
+                }
+
+                // Initialize
+                initializeFiltersFromURL();
             });
-        } else {
-            Swal.fire({
-                title: 'Error',
-                text: error.response?.data?.message || error.message || 'Failed to update wishlist',
-                icon: 'error',
-                timer: 1500,
-                position: 'top-end',
-                toast: true
+        </script>
+        <!--===============================================================================================-->
+        <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
+        <script src="vendor/animsition/js/animsition.min.js"></script>
+
+        <script>
+            $('.js-pscroll').each(function () {
+                $(this).css('position', 'relative');
+                $(this).css('overflow', 'hidden');
+                var ps = new PerfectScrollbar(this, {
+                    wheelSpeed: 1,
+                    scrollingThreshold: 1000,
+                    wheelPropagation: false,
+                });
+
+                $(window).on('resize', function () {
+                    ps.update();
+                })
             });
-        }
-    }
-}
-				</script>
+        </script>
+        <!--===============================================================================================-->
+        <script src="js/main.js"></script>
+        <style>
+            .price-wishlist {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 10px;
+                padding: 5px 0;
+            }
 
-				<!-- Load more -->
-				<div class="flex-c-m flex-w w-full p-t-45">
-					<a href="#" class="flex-c-m stext-101 cl5 size-103 bg2 bor1 hov-btn1 p-lr-15 trans-04">
-						Load More
-					</a>
-				</div>
-			</div>
-		</div>
+            .price-container {
+                flex-grow: 1;
+            }
 
-		<!-- Footer -->
-		<%-include("partials/footer")%>
+            .card-price {
+                margin: 0;
+                font-size: 16px;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
 
-			<!-- Back to top -->
-			<div class="btn-back-to-top" id="myBtn">
-				<span class="symbol-btn-back-to-top">
-					<i class="zmdi zmdi-chevron-up"></i>
-				</span>
-			</div>
+            .original-price {
+                text-decoration: line-through;
+                color: #999;
+                font-size: 14px;
+            }
 
+            .discount-percent {
+                background-color: #ff4444;
+                color: white;
+                padding: 2px 6px;
+                border-radius: 3px;
+                font-size: 12px;
+            }
 
-			<!--===============================================================================================-->
-			<script src="vendor/jquery/jquery-3.2.1.min.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/animsition/js/animsition.min.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/bootstrap/js/popper.js"></script>
-			<script src="vendor/bootstrap/js/bootstrap.min.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/select2/select2.min.js"></script>
-			<script>
-				$(".js-select2").each(function () {
-					$(this).select2({
-						minimumResultsForSearch: 20,
-						dropdownParent: $(this).next('.dropDownSelect2')
-					});
-				})
-			</script>
-			<!--===============================================================================================-->
-			<script src="vendor/daterangepicker/moment.min.js"></script>
-			<script src="vendor/daterangepicker/daterangepicker.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/slick/slick.min.js"></script>
-			<script src="js/slick-custom.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/parallax100/parallax100.js"></script>
-			<script>
-				$('.parallax100').parallax100();
-			</script>
-			<!--===============================================================================================-->
-			<script src="vendor/MagnificPopup/jquery.magnific-popup.min.js"></script>
-			<script>
-				$('.gallery-lb').each(function () { // the containers for all your galleries
-					$(this).magnificPopup({
-						delegate: 'a', // the selector for gallery item
-						type: 'image',
-						gallery: {
-							enabled: true
-						},
-						mainClass: 'mfp-fade'
-					});
-				});
-			</script>
-			<!--===============================================================================================-->
-			<script src="vendor/isotope/isotope.pkgd.min.js"></script>
-			<!--===============================================================================================-->
-			<script src="vendor/sweetalert/sweetalert.min.js"></script>
-			<script>
-				$('.js-addwish-b2, .js-addwish-detail').on('click', function (e) {
-					e.preventDefault();
-				});
+            .wishlist-icon {
+                cursor: pointer;
+                padding: 5px;
+            }
 
-				$('.js-addwish-b2').each(function () {
-					var nameProduct = $(this).parent().parent().find('.js-name-b2').html();
-					$(this).on('click', function () {
-						swal(nameProduct, "is added to wishlist !", "success");
+            .wishlist-icon i:hover {
+                color: #ff4444;
+            }
 
-						$(this).addClass('js-addedwish-b2');
-						$(this).off('click');
-					});
-				});
+            .loader {
+                text-align: center;
+                padding: 20px;
+            }
 
-				$('.js-addwish-detail').each(function () {
-					var nameProduct = $(this).parent().parent().parent().find('.js-name-detail').html();
-
-					$(this).on('click', function () {
-						swal(nameProduct, "is added to wishlist !", "success");
-
-						$(this).addClass('js-addedwish-detail');
-						$(this).off('click');
-					});
-				});
-
-				/*---------------------------------------------*/
-
-				$('.js-addcart-detail').each(function () {
-					var nameProduct = $(this).parent().parent().parent().parent().find('.js-name-detail').html();
-					$(this).on('click', function () {
-						swal(nameProduct, "is added to cart !", "success");
-					});
-				});
-
-			</script>
-			<!--===============================================================================================-->
-			<script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
-			<script>
-				$('.js-pscroll').each(function () {
-					$(this).css('position', 'relative');
-					$(this).css('overflow', 'hidden');
-					var ps = new PerfectScrollbar(this, {
-						wheelSpeed: 1,
-						scrollingThreshold: 1000,
-						wheelPropagation: false,
-					});
-
-					$(window).on('resize', function () {
-						ps.update();
-					})
-				});
-			</script>
-			<!--===============================================================================================-->
-			<script src="js/main.js"></script>
-<style>
-	.price-wishlist {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 10px;
-        padding: 5px 0;
-    }
-
-    .price-container {
-        flex-grow: 1;
-    }
-
-    .card-price {
-        margin: 0;
-        font-size: 16px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        flex-wrap: wrap;
-    }
-
-    .original-price {
-        text-decoration: line-through;
-        color: #999;
-        font-size: 14px;
-    }
-
-    .discount-percent {
-        background-color: #ff4444;
-        color: white;
-        padding: 2px 6px;
-        border-radius: 3px;
-        font-size: 12px;
-    }
-
-    .wishlist-icon {
-        cursor: pointer;
-        padding: 5px;
-    }
-
-    .wishlist-icon i:hover {
-        color: #ff4444;
-    }
-</style>
+            .error {
+                text-align: center;
+                color: red;
+                padding: 20px;
+            }
+        </style>
 </body>
 
 </html>

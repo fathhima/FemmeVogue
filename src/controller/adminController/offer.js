@@ -46,7 +46,6 @@ const offerCreate = async (req, res) => {
             maxDiscountAmount,
         } = req.body;
 
-        // Validate required fields
         if (!name || !type || !discountType || !discountValue) {
             return res.status(400).json({
                 success: false,
@@ -54,7 +53,6 @@ const offerCreate = async (req, res) => {
             });
         }
 
-        // Validate applicableFor for product and category types
         if ((type === 'product' || type === 'category') && !applicableFor) {
             return res.status(400).json({
                 success: false,
@@ -62,7 +60,6 @@ const offerCreate = async (req, res) => {
             });
         }
 
-        // Validate dates
         const start = new Date(startDate);
         const end = new Date(endDate);
 
@@ -73,7 +70,6 @@ const offerCreate = async (req, res) => {
             });
         }
 
-        // Validate discount value for percentage
         if (discountType === "percentage" && (discountValue <= 0 || discountValue > 100)) {
             return res.status(400).json({
                 success: false,
@@ -147,7 +143,6 @@ const offerEdit = async(req,res) => {
             maxDiscountAmount
         } = req.body
 
-        // Validate required fields
         if (!name || !type || !discountType || !discountValue) {
             return res.status(400).json({
                 success: false,
@@ -155,7 +150,6 @@ const offerEdit = async(req,res) => {
             });
         }
 
-        // Validate applicableFor for product and category types
         if ((type === 'product' || type === 'category') && !applicableFor) {
             return res.status(400).json({
                 success: false,
@@ -163,7 +157,6 @@ const offerEdit = async(req,res) => {
             });
         }
 
-        // Validate dates
         const start = new Date(startDate);
         const end = new Date(endDate);
 
@@ -174,7 +167,6 @@ const offerEdit = async(req,res) => {
             });
         }
 
-        // Validate discount value for percentage
         if (discountType === "percentage" && (discountValue <= 0 || discountValue > 100)) {
             return res.status(400).json({
                 success: false,

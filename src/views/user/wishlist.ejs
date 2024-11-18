@@ -40,23 +40,11 @@
                         
                         <div class="flex justify-between items-center mb-4">
                             <div class="price-container">
-                                <% if (item.hasOffer) { %>
                                     <p class="text-lg">
                                         <span class="font-bold text-green-600">
-                                            ₹<%= Math.floor(item.finalPrice) %>
-                                        </span>
-                                        <span class="text-sm line-through text-gray-500 ml-2">
-                                            ₹<%= Math.floor(item.originalPrice) %>
-                                        </span>
-                                        <span class="text-xs text-green-600 ml-2">
-                                            <%= Math.floor((item.discountAmount / item.originalPrice) * 100) %>% OFF
+                                            ₹<%= Math.floor(item.variants[0].price) %>
                                         </span>
                                     </p>
-                                <% } else { %>
-                                    <p class="text-lg font-bold">
-                                        ₹<%= Math.floor(item.originalPrice) %>
-                                    </p>
-                                <% } %>
                             </div>
                             <small class="text-gray-500">
                                 Added <%= new Date(item.addedAt).toLocaleDateString() %>

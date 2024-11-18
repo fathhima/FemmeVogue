@@ -125,8 +125,8 @@
                                         </div>
                 
                                         <div class="col-md-4">
-                                            <label class="form-label">Usage Limit</label>
-                                            <input type="number" class="form-control" name="usageLimit" min="1">
+                                            <label class="form-label">User Limit</label>
+                                            <input type="number" class="form-control" name="userLimit" min="1">
                                         </div>
                 
                                         <div class="col-md-4">
@@ -190,7 +190,7 @@
                             ${new Date(coupon.validUntil).toLocaleDateString()}
                         </td>
                         <td>$${coupon.minimumPurchase}</td>
-                        <td>${coupon.usedCount}/${coupon.usageLimit || '∞'}</td>
+                        <td>${coupon.usedCount}/${coupon.userLimit || '∞'}</td>
                         <td>
                             <div class="form-check form-switch">
                                 <input class="form-check-input" type="checkbox" 
@@ -239,7 +239,7 @@
         data.discountAmount = Number(data.discountAmount);
         data.minimumPurchase = Number(data.minimumPurchase);
         data.maxDiscount = data.maxDiscount ? Number(data.maxDiscount) : undefined;
-        data.usageLimit = data.usageLimit ? Number(data.usageLimit) : undefined;
+        data.userLimit = data.userLimit ? Number(data.userLimit) : undefined;
     
         try {
             const url = couponId ? `/admin/coupons/${couponId}` : '/admin/coupons';

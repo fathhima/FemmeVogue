@@ -24,7 +24,7 @@
                                 </button>
                             </td>
                             <td class="px-6 py-4">
-                                <%= order._id %>
+                                <%= order._id.toString().slice(-6).toUpperCase() %>
                             </td>
                             <td class="px-6 py-4">
                                 <%= new Date(order.orderedAt).toLocaleDateString() %>
@@ -50,7 +50,7 @@
                                 View
                             </button>                             
 
-                                <% if (order.orderStatus === 'pending' || order.orderStatus === 'processing') { %>
+                                <% if (order.orderStatus === 'processing') { %>
                                     <button onclick="showCancelDialog('<%= order._id %>', 'full')"
                                         class="bg-red-500 text-white px-2 py-2 text-sm rounded hover:bg-red-600">
                                         Cancel Order
@@ -60,6 +60,13 @@
                                         class="bg-yellow-500 text-white px-2 py-2 text-sm rounded hover:bg-yellow-600">
                                         Return Order
                                     </button>
+                                <% } else if (order.paymentMethod === 'razorpay' && order.paymentStatus === 'failed') { %>
+                                        <button 
+                                            onclick="retryRazorpayPayment('<%= order._id %>')" 
+                                            class="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                        >
+                                            Retry Payment
+                                        </button>
                                 <% } %>
                             </td>
                         </tr>
@@ -119,16 +126,26 @@
 </div>
 
 <!-- View Order Details Modal -->
-<div id="viewOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+<div id="viewOrderModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center" style="z-index: 1500;">
     <div class="bg-white p-6 rounded-lg max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-semibold">Order Details</h3>
+            <div class="flex items-center gap-4">
+            <button id="downloadInvoiceBtn" 
+                        onclick="downloadInvoice()"
+                        class="hidden px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M6 2a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7.414A2 2 0 0015.414 6L12 2.586A2 2 0 0010.586 2H6zm5 6a1 1 0 10-2 0v3.586l-1.293-1.293a1 1 0 10-1.414 1.414l3 3a1 1 0 001.414 0l3-3a1 1 0 00-1.414-1.414L11 11.586V8z" clip-rule="evenodd" />
+                    </svg>
+                    Download Invoice
+                </button>
             <button onclick="hideViewOrderModal()" class="text-gray-500 hover:text-gray-700">
                 <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12">
                     </path>
                 </svg>
             </button>
+        </div>
         </div>
         <div class="space-y-4">
             <!-- Order Information -->
@@ -261,6 +278,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
 <script>
 
@@ -280,24 +298,18 @@
     }
 
     function viewOrderDetails(orderData) {
-        console.log(orderData)
         const order = JSON.parse(orderData);
-        console.log(order)
-
-        // Fill in the modal with order details
-        document.getElementById('viewOrderId').textContent = order._id;
+        document.getElementById('viewOrderId').textContent = order._id.toString().slice(-6).toUpperCase();
         document.getElementById('viewOrderDate').textContent = new Date(order.orderedAt).toLocaleString();
         document.getElementById('viewOrderStatus').textContent = order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1);
         document.getElementById('viewPaymentMethod').textContent = order.paymentMethod.toUpperCase();
         document.getElementById('viewPaymentStatus').textContent = order.paymentStatus;
 
-        // Shipping address
         document.getElementById('viewShippingName').textContent = order.shippingAddress.name;
         document.getElementById('viewShippingAddress').textContent = order.shippingAddress.addressLine;
         document.getElementById('viewShippingPhone').textContent = order.shippingAddress.phone;
         document.getElementById('viewAddressType').textContent = order.shippingAddress.addressType;
 
-        // Order items
         const itemsContainer = document.getElementById('viewOrderItems');
         itemsContainer.innerHTML = `
             <table class="min-w-full">
@@ -322,12 +334,10 @@
             </table>
         `;
 
-        // Price details
         document.getElementById('viewSubtotal').textContent = `₹${order.subtotal}`;
         document.getElementById('viewShippingCharge').textContent = `₹${order.shippingCharge}`;
         document.getElementById('viewFinalTotal').textContent = `₹${order.finalTotal}`;
 
-        // Show the modal
         document.getElementById('viewOrderModal').classList.remove('hidden');
     }
 
@@ -335,7 +345,6 @@
         document.getElementById('viewOrderModal').classList.add('hidden');
     }
 
-    // Existing functions remain the same
     function showCancelDialog(orderId, type, productId = null) {
         currentCancelData = { orderId, type, productId };
         document.getElementById('cancelDialog').classList.remove('hidden');
@@ -349,7 +358,6 @@
         currentCancelData = null;
     }
 
-    // Handle reason dropdown change
     document.getElementById('cancelReason').addEventListener('change', function () {
         const customReasonInput = document.getElementById('customReason');
         if (this.value === 'other') {
@@ -414,7 +422,6 @@
         hideCancelDialog();
     }
 
-    // Close modals when clicking outside
     window.addEventListener('click', function (event) {
         const viewOrderModal = document.getElementById('viewOrderModal');
         const cancelDialog = document.getElementById('cancelDialog');
@@ -428,7 +435,6 @@
         }
     });
 
-    // Close modals on escape key
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape') {
             hideViewOrderModal();
@@ -436,7 +442,6 @@
         }
     });
 
-    // Format currency helper function
     function formatCurrency(amount) {
         return new Intl.NumberFormat('en-IN', {
             style: 'currency',
@@ -445,7 +450,6 @@
         }).format(amount);
     }
 
-    // Format date helper function
     function formatDate(dateString) {
         return new Date(dateString).toLocaleString('en-IN', {
             year: 'numeric',
@@ -456,7 +460,6 @@
         });
     }
 
-    // Handle any errors in the JSON parsing
     function safeJSONParse(str) {
         try {
             return JSON.parse(str);
@@ -466,7 +469,6 @@
         }
     }
 
-    // Enhance error handling for viewOrderDetails
     function viewOrderDetails(orderData) {
         const order = safeJSONParse(orderData);
         if (!order) {
@@ -479,20 +481,26 @@
         }
 
         try {
-            // Fill in the modal with order details
-            document.getElementById('viewOrderId').textContent = order._id;
+
+        currentOrderId = order._id;
+        
+        const downloadButton = document.getElementById('downloadInvoiceBtn');
+        if (order.orderStatus === 'delivered') {
+            downloadButton.classList.remove('hidden');
+        } else {
+            downloadButton.classList.add('hidden');
+        }
+            document.getElementById('viewOrderId').textContent = order._id.toString().slice(-6).toUpperCase();
             document.getElementById('viewOrderDate').textContent = formatDate(order.orderedAt);
             document.getElementById('viewOrderStatus').textContent = order.orderStatus.charAt(0).toUpperCase() + order.orderStatus.slice(1);
             document.getElementById('viewPaymentMethod').textContent = order.paymentMethod.toUpperCase();
             document.getElementById('viewPaymentStatus').textContent = order.paymentStatus;
 
-            // Shipping address
             document.getElementById('viewShippingName').textContent = order.shippingAddress.name;
             document.getElementById('viewShippingAddress').textContent = order.shippingAddress.addressLine;
             document.getElementById('viewShippingPhone').textContent = order.shippingAddress.phone;
             document.getElementById('viewAddressType').textContent = order.shippingAddress.addressType;
 
-            // Order items
             const itemsContainer = document.getElementById('viewOrderItems');
             itemsContainer.innerHTML = `
     <table class="min-w-full">
@@ -517,12 +525,10 @@
     </table>
 `;
 
-            // Price details
             document.getElementById('viewSubtotal').textContent = formatCurrency(order.subtotal);
             document.getElementById('viewShippingCharge').textContent = formatCurrency(order.shippingCharge);
             document.getElementById('viewFinalTotal').textContent = formatCurrency(order.finalTotal);
 
-            // Show the modal
             document.getElementById('viewOrderModal').classList.remove('hidden');
         } catch (error) {
             console.error('Error displaying order details:', error);
@@ -534,7 +540,60 @@
         }
     }
 
-    // Add loading states for better UX
+    async function downloadInvoice() {
+    if (!currentOrderId) {
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: 'Order ID not found'
+        });
+        return;
+    }
+
+    try {
+        const button = document.getElementById('downloadInvoiceBtn');
+        const originalContent = button.innerHTML;
+        button.innerHTML = `
+            <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Generating...
+        `;
+        button.disabled = true;
+
+        const response = await axios({
+            url: `/profile/orders/${currentOrderId}/invoice`,
+            method: 'GET',
+            responseType: 'blob' 
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.setAttribute('download', `invoice-${currentOrderId}.pdf`);
+        document.body.appendChild(link);
+        link.click();
+        
+        link.parentNode.removeChild(link);
+        window.URL.revokeObjectURL(url);
+        
+        button.innerHTML = originalContent;
+        button.disabled = false;
+
+    } catch (error) {
+        console.error('Download failed:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Download Failed',
+            text: 'Failed to download invoice. Please try again later.'
+        });
+        
+        button.innerHTML = originalContent;
+        button.disabled = false;
+    }
+}
+
     async function performAction(actionFn, loadingMessage = 'Processing...') {
         try {
             Swal.fire({
@@ -557,9 +616,7 @@
         }
     }
 
-    // Initialize any tooltips or popovers
     document.addEventListener('DOMContentLoaded', function () {
-        // Add any initialization code here
         console.log('Order management system initialized');
     });
 
@@ -579,7 +636,6 @@
         currentReturnData = null;
     }
 
-    // Handle return reason dropdown change
     document.getElementById('returnReason').addEventListener('change', function() {
         const customReasonInput = document.getElementById('customReturnReason');
         if (this.value === 'other') {
@@ -645,6 +701,91 @@
 
         hideReturnDialog();
     }
+
+    async function retryRazorpayPayment(orderId) {
+    try {
+        Swal.fire({
+            title: 'Initializing Payment',
+            text: 'Please wait...',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            didOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const response = await axios.post('/orders/retry-razorpay-payment', {
+            orderId: orderId
+        });
+
+        if (!response.data.success) {
+            throw new Error(response.data.message);
+        }
+
+        const options = {
+            key: response.data.key_id,
+            amount: response.data.order.amount,
+            currency: response.data.order.currency,
+            name: 'Your Store Name',
+            description: 'Order Payment Retry',
+            order_id: response.data.order.id,
+            handler: async function(response) {
+                try {
+                    const verifyResponse = await axios.post('/checkout/verify-razorpay-payment', {
+                        razorpay_order_id: response.razorpay_order_id,
+                        razorpay_payment_id: response.razorpay_payment_id,
+                        razorpay_signature: response.razorpay_signature,
+                        orderId: orderId,
+                        status: response.status || 'success',
+                        isRetry: true
+                    });
+
+                    if (verifyResponse.data.success) {
+                        await Swal.fire({
+                            icon: 'success',
+                            title: 'Payment Successful!',
+                            text: 'Your payment has been completed.',
+                            timer: 2000,
+                            showConfirmButton: false
+                        });
+                        
+                        window.location.reload();
+                    }
+                } catch (error) {
+                    console.error('Payment verification failed:', error);
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Payment Verification Failed',
+                        text: 'There was an error verifying your payment. Please contact support.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+            modal: {
+                ondismiss: async function() {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Payment Cancelled',
+                        text: 'You cancelled the payment retry.',
+                        confirmButtonColor: '#3085d6'
+                    });
+                }
+            },
+        };
+
+        const razorpay = new Razorpay(options);
+        razorpay.open();
+
+    } catch (error) {
+        console.error('Retry payment failed:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Error',
+            text: error.message || 'Could not initiate payment retry. Please try again.',
+            confirmButtonColor: '#3085d6'
+        });
+    }
+}
 
     // Add to your existing event listeners
     window.addEventListener('click', function(event) {

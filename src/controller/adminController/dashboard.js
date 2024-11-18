@@ -1,9 +1,7 @@
 const Order = require('../../models/order');
 const moment = require('moment');
 
-// Helper function to calculate report summary
 const calculateSummary = (orders) => {
-    console.log(`Calculating summary for ${orders.length} orders`);
     return orders.reduce((summary, order) => {
         summary.totalSales += order.subtotal || 0;
         summary.totalOrders += 1;
@@ -18,14 +16,11 @@ const calculateSummary = (orders) => {
     });
 };
 
-// Helper function to group orders by date
 const groupOrdersByDate = (orders, reportType) => {
-    console.log(`Grouping ${orders.length} orders by ${reportType}`);
     const groupedOrders = {};
     
     orders.forEach(order => {
         if (!order.orderedAt) {
-            console.log('Order missing orderedAt:', order._id);
             return;
         }
 
@@ -63,7 +58,6 @@ const groupOrdersByDate = (orders, reportType) => {
         groupedOrders[dateKey].orders += 1;
         groupedOrders[dateKey].grossSales += order.subtotal || 0;
         
-        // Calculate item discounts safely
         const itemDiscounts = order.items?.reduce((total, item) => {
             if (!item || !item.price || !item.quantity) return total;
             const originalPrice = item.price * item.quantity;
@@ -79,7 +73,6 @@ const groupOrdersByDate = (orders, reportType) => {
 };
 
 const generateReport = async (req, res) => {
-    console.log('Generating report - Request received:', req.body);
     
     try {
         const { reportType, startDate, endDate } = req.body;
@@ -100,8 +93,6 @@ const generateReport = async (req, res) => {
                 message: 'Invalid date format'
             });
         }
-
-        console.log('Querying orders between:', parsedStartDate.toISOString(), 'and', parsedEndDate.toISOString());
         
         const baseQuery = {
             orderStatus: 'delivered',
@@ -118,8 +109,6 @@ const generateReport = async (req, res) => {
             .sort({ orderedAt: 1 })
             .lean();
 
-        console.log(`Found ${orders.length} orders matching criteria`);
-
         if (orders.length === 0) {
             return res.json({
                 success: true,
@@ -133,13 +122,9 @@ const generateReport = async (req, res) => {
             });
         }
 
-        // Calculate summary
         const summary = calculateSummary(orders);
-        console.log('Summary calculated:', summary);
 
-        // Group orders by date
         const details = groupOrdersByDate(orders, reportType);
-        console.log(`Grouped into ${details.length} ${reportType} periods`);
 
         res.json({
             success: true,
@@ -157,6 +142,121 @@ const generateReport = async (req, res) => {
     }
 };
 
+const topPerformers = async(req,res) => {
+    try {
+        const { startDate, endDate } = req.body;        
+        const parsedStartDate = moment(startDate).startOf('day');
+        const parsedEndDate = moment(endDate).endOf('day');
+
+        const baseQuery = {
+            orderStatus: 'delivered',
+            paymentStatus: 'completed',
+            orderedAt: {
+                $gte: parsedStartDate.toDate(),
+                $lte: parsedEndDate.toDate()
+            }
+        };
+
+        // Aggregate for top products
+        const topProducts = await Order.aggregate([
+            { $match: baseQuery },
+            { $unwind: '$items' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.productId',
+                    foreignField: '_id',
+                    as: 'product'
+                }
+            },
+            {$unwind: '$product'},
+            {
+                $group: {
+                    _id: '$items.productId',
+                    name: { $first: '$product.brandName' },
+                    totalSales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                    totalQuantity: { $sum: '$items.quantity' }
+                }
+            },
+            { $sort: { totalSales: -1 } },
+            { $limit: 10 }
+        ]);
+
+        // Aggregate for top categories
+        const topCategories = await Order.aggregate([
+            { $match: baseQuery },
+            { $unwind: '$items' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.productId',
+                    foreignField: '_id',
+                    as: 'product'
+                }
+            },
+            { $unwind: '$product' },
+            {
+                $lookup: {
+                    from: 'categories',
+                    localField: 'product.category',
+                    foreignField: '_id',
+                    as: 'category'
+                }
+            },
+            {
+                $group: {
+                    _id: '$product.category',
+                    name: { $first: '$category.name' },
+                    totalSales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                    totalQuantity: { $sum: '$items.quantity' }
+                }
+            },
+            { $sort: { totalSales: -1 } },
+            { $limit: 10 }
+        ]);
+
+        // Aggregate for top brands
+        const topBrands = await Order.aggregate([
+            { $match: baseQuery },
+            { $unwind: '$items' },
+            {
+                $lookup: {
+                    from: 'products',
+                    localField: 'items.productId',
+                    foreignField: '_id',
+                    as: 'product'
+                }
+            },
+            { $unwind: '$product' },
+            {
+                $group: {
+                    _id: '$product.brandName',
+                    name: { $first: '$product.brandName' },
+                    totalSales: { $sum: { $multiply: ['$items.price', '$items.quantity'] } },
+                    totalQuantity: { $sum: '$items.quantity' }
+                }
+            },
+            { $sort: { totalSales: -1 } },
+            { $limit: 10 }
+        ]);
+
+        res.json({
+            success: true,
+            topProducts,
+            topCategories,
+            topBrands
+        });
+
+    } catch (error) {
+        console.error('Error fetching top performers:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching top performers'
+        });
+    }
+}
+
 module.exports = {
-    generateReport
+    generateReport,
+    topPerformers
 };

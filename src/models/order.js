@@ -31,7 +31,7 @@ const orderSchema = new mongoose.Schema({
         },
         status: {
             type: String,
-            enum: ['pending','processing','shipped','delivered','cancelled','return'],
+            enum: ['pending','processing','shipped','delivered','cancelled','Return_Requested','Return_Approved'],
             default: 'pending'
         },
         cancelReason: {
@@ -114,9 +114,13 @@ const orderSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
+    totalSavings: {
+        type: Number,
+        default: 0
+    },
     returnStatus: {
         type: String,
-        enum: ['none', 'pending', 'approved', 'rejected', 'completed'],
+        enum: ['none', 'pending', 'approved', 'rejected', 'completed','partial_approved'],
         default: 'none'
     },
     returnReason: {
@@ -130,6 +134,22 @@ const orderSchema = new mongoose.Schema({
     },
     returnProcessedAt: {
         type: Date
+    },
+    razorpayOrderId: {
+        type: String,
+    },
+    paymentAttempts: [{
+        razorpayOrderId: {
+            type: String,
+        },
+        attemptedAt: {
+            type: Date,
+            default: Date.now
+        }
+    }],
+    walletAmountUsed: {
+        type: Number,
+        default: 0
     }
 });
 

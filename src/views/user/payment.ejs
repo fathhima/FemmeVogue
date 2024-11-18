@@ -72,6 +72,9 @@
                                     <input type="radio" name="paymentMethod" value="cod" id="cod" class="w-4 h-4">
                                     <label for="cod" class="flex-grow">
                                         <span class="font-medium">Cash on delivery</span>
+                                        <span id="codRestrictionMsg" class="text-sm text-red-500 hidden">
+                                            (Not available for orders above ₹1000)
+                                        </span>
                                     </label>
                                 </div>
                                 <div class="flex items-center gap-3">
@@ -212,8 +215,29 @@
                 document.addEventListener('DOMContentLoaded', function () {
                     const paymentForm = document.getElementById('paymentForm');
                     const addressDisplayContainer = document.getElementById('selected-address-display');
+                    const codRadio = document.getElementById('cod');
+                    const codRestrictionMsg = document.getElementById('codRestrictionMsg');
 
-                    // Payment Form Handler
+
+                    const subtotalElement = document.querySelector('[data-subtotal]');
+                    const subtotal = parseFloat(subtotalElement.dataset.subtotal);
+
+                    function handleCodAvailability() {
+                        if (subtotal > 1000) {
+                            codRadio.disabled = true;
+                            codRestrictionMsg.classList.remove('hidden');
+                            if (codRadio.checked) {
+                                codRadio.checked = false;
+                            }
+                        } else {
+                            codRadio.disabled = false;
+                            codRestrictionMsg.classList.add('hidden');
+                        }
+                    }
+
+                    handleCodAvailability();
+
+
                     if (paymentForm) {
                         paymentForm.addEventListener('submit', async function (e) {
                             e.preventDefault();
@@ -235,10 +259,17 @@
 
                             const paymentMethod = selectedPayment.value;
 
-                            // Handle Cash on Delivery
                             if (paymentMethod === 'cod') {
+                                if (subtotal > 1000) {
+                                    Swal.fire({
+                                        icon: 'error',
+                                        title: 'Invalid Payment Method',
+                                        text: 'Cash on Delivery is not available for orders above ₹1000. Please choose a different payment method.',
+                                        confirmButtonColor: '#3085d6'
+                                    });
+                                    return;
+                                }
                                 try {
-                                    // Show loading state
                                     Swal.fire({
                                         title: 'Processing Order',
                                         text: 'Please wait while we process your order...',
@@ -250,28 +281,24 @@
                                         }
                                     });
 
-                                    // Get shipping address from session storage
                                     const addressData = JSON.parse(sessionStorage.getItem('selectedAddress'));
                                     if (!addressData) {
                                         throw new Error('Shipping address not found');
                                     }
 
-                                    // Create order data
                                     const orderData = {
                                         paymentMethod: 'cod',
                                         shippingAddress: addressData,
-                                        couponCode: currentCouponCode
+                                        couponCode: currentCouponCode,
+                                        subtotal: subtotal
                                     };
 
-                                    // Send order to server using Axios
                                     const response = await axios.post('/checkout/place-order-cod', orderData);
 
-                                    // Validate response
                                     if (!response.data || !response.data.orderId) {
                                         throw new Error('Invalid order response from server');
                                     }
 
-                                    // Show success message
                                     await Swal.fire({
                                         icon: 'success',
                                         title: 'Order Placed Successfully!',
@@ -280,7 +307,6 @@
                                         showConfirmButton: false
                                     });
 
-                                    // Redirect to order confirmation
                                     window.location.href = `/order/confirmation/${response.data.orderId}`;
 
                                 } catch (error) {
@@ -293,10 +319,8 @@
                                     });
                                 }
                             }
-                            // Handle Razorpay payment
                             else if (paymentMethod === 'razorpay') {
                                 try {
-                                    // Show loading state
                                     Swal.fire({
                                         title: 'Initializing Payment',
                                         text: 'Please wait...',
@@ -306,23 +330,23 @@
                                             Swal.showLoading();
                                         }
                                     });
-                                    // Get shipping address
+
                                     const addressData = JSON.parse(sessionStorage.getItem('selectedAddress'));
                                     if (!addressData) {
                                         throw new Error('Shipping address not found');
                                     }
 
-                                    // Create Razorpay order
                                     const orderResponse = await axios.post('/checkout/create-razorpay-order', {
-                                        shippingAddress: addressData
+                                        shippingAddress: addressData,
+                                        couponCode: currentCouponCode
                                     });
+
+                                    console.log(currentCouponCode)
 
                                     if (!orderResponse.data || !orderResponse.data.order) {
                                         throw new Error('Invalid Razorpay order response');
                                     }
 
-                                    console.log(orderResponse.data)
-                                    // Initialize Razorpay payment
                                     const options = {
                                         key: orderResponse.data.key_id,
                                         amount: orderResponse.data.order.amount,
@@ -330,27 +354,74 @@
                                         name: 'Your Store Name',
                                         description: 'Order Payment',
                                         order_id: orderResponse.data.order.id,
+                                        prefill: {
+                                            name: addressData.name,
+                                            contact: addressData.phone
+                                        },
+                                        theme: {
+                                            color: '#3085d6'
+                                        },
+                                        modal: {
+                                            ondismiss: async function () {
+                                                try {
+                                                    const verifyResponse = await axios.post('/checkout/verify-razorpay-payment', {
+                                                        razorpay_order_id: orderResponse.data.order.id,
+                                                        orderId: orderResponse.data.orderId,
+                                                        status: 'failed',
+                                                        error: 'Payment cancelled by user'
+                                                    });
+
+                                                    await Swal.fire({
+                                                        icon: 'warning',
+                                                        title: 'Payment Failed',
+                                                        text: 'Your order has been placed but payment failed.',
+                                                        confirmButtonColor: '#3085d6'
+                                                    });
+
+                                                    if (verifyResponse.data.orderId) {
+                                                        window.location.href = `/order/confirmation/${verifyResponse.data.orderId}`;
+                                                    }
+                                                } catch (error) {
+                                                    console.error('Payment cancellation handling failed:', error);
+                                                    Swal.fire({
+                                                        icon: 'error',
+                                                        title: 'Error',
+                                                        text: 'Failed to process payment cancellation',
+                                                        confirmButtonColor: '#3085d6'
+                                                    });
+                                                }
+                                            }
+                                        },
                                         handler: async function (response) {
                                             try {
-                                                // Verify payment
                                                 const verifyResponse = await axios.post('/checkout/verify-razorpay-payment', {
                                                     razorpay_order_id: response.razorpay_order_id,
                                                     razorpay_payment_id: response.razorpay_payment_id,
                                                     razorpay_signature: response.razorpay_signature,
-                                                    orderId: orderResponse.data.orderId
+                                                    orderId: orderResponse.data.orderId,
+                                                    status: response.status || 'success'
                                                 });
 
                                                 if (verifyResponse.data.orderId) {
-                                                    // Show success message
-                                                    await Swal.fire({
-                                                        icon: 'success',
+                                                    let alertConfig = {
                                                         title: 'Payment Successful!',
                                                         text: 'Redirecting to order confirmation...',
+                                                        icon: 'success',
                                                         timer: 2000,
                                                         showConfirmButton: false
-                                                    });
+                                                    };
 
-                                                    // Redirect to order confirmation
+                                                    if (verifyResponse.data.status === 'failed') {
+                                                        alertConfig = {
+                                                            title: 'Payment Failed',
+                                                            text: 'Your order has been placed but payment failed.',
+                                                            icon: 'error',
+                                                            showConfirmButton: true,
+                                                            confirmButtonColor: '#3085d6'
+                                                        };
+                                                    }
+
+                                                    await Swal.fire(alertConfig);
                                                     window.location.href = `/order/confirmation/${verifyResponse.data.orderId}`;
                                                 }
                                             } catch (error) {
@@ -362,13 +433,6 @@
                                                     confirmButtonColor: '#3085d6'
                                                 });
                                             }
-                                        },
-                                        prefill: {
-                                            name: addressData.name,
-                                            contact: addressData.phone
-                                        },
-                                        theme: {
-                                            color: '#3085d6'
                                         }
                                     };
 
@@ -385,10 +449,8 @@
                                     });
                                 }
                             }
-                            // Handle Wallet payment
                             else if (paymentMethod === 'wallet') {
                                 try {
-                                    // Show loading state
                                     Swal.fire({
                                         title: 'Processing Wallet Payment',
                                         text: 'Please wait...',
@@ -399,22 +461,20 @@
                                         }
                                     });
 
-                                    // Get shipping address
                                     const addressData = JSON.parse(sessionStorage.getItem('selectedAddress'));
                                     if (!addressData) {
                                         throw new Error('Shipping address not found');
                                     }
 
-                                    // Process wallet payment
                                     const response = await axios.post('/checkout/process-wallet-payment', {
-                                        shippingAddress: addressData
+                                        shippingAddress: addressData,
+                                        couponCode: currentCouponCode
                                     });
 
                                     if (!response.data || !response.data.orderId) {
                                         throw new Error('Invalid wallet payment response');
                                     }
 
-                                    // Show success message
                                     await Swal.fire({
                                         icon: 'success',
                                         title: 'Payment Successful!',
@@ -423,7 +483,6 @@
                                         showConfirmButton: false
                                     });
 
-                                    // Redirect to order confirmation
                                     window.location.href = `/order/confirmation/${response.data.orderId}`;
 
                                 } catch (error) {
@@ -439,7 +498,6 @@
                         });
                     }
 
-                    // Address Display Functions
                     function displaySelectedAddress() {
                         try {
                             const savedAddress = sessionStorage.getItem('selectedAddress');
@@ -460,12 +518,10 @@
 
                             const addressData = JSON.parse(savedAddress);
 
-                            // Validate required address fields
                             if (!addressData.name || !addressData.addressLine || !addressData.phone) {
                                 throw new Error('Invalid address data');
                             }
 
-                            // Create the address display HTML
                             const addressHTML = `
                 <div class="flex justify-between items-center mb-4">
                     <div class="flex items-center gap-2">
@@ -511,7 +567,6 @@
                         }
                     }
 
-                    // Validate address before payment
                     function validateAddressBeforePayment() {
                         const savedAddress = sessionStorage.getItem('selectedAddress');
 
@@ -531,7 +586,6 @@
                         return true;
                     }
 
-                    // Page leave confirmation
                     window.addEventListener('beforeunload', function (e) {
                         const selectedPayment = document.querySelector('input[name="paymentMethod"]:checked');
                         if (selectedPayment) {
@@ -555,14 +609,12 @@
                         }
                     });
 
-                    // Listen for address changes
                     window.addEventListener('storage', function (e) {
                         if (e.key === 'selectedAddress') {
                             displaySelectedAddress();
                         }
                     });
 
-                    // Initial address display
                     displaySelectedAddress();
                 });
 
@@ -681,12 +733,11 @@
                         if (response.data.success) {
                             const savingsEl = document.querySelector('[data-savings]');
                             const discount = parseFloat(savingsEl.dataset.savings);
-                            updateOrderSummary(-discount); // Remove the discount amount
+                            updateOrderSummary(-discount); 
                             resetCouponState();
                         }
                     } catch (error) {
                         console.error('Error removing coupon:', error);
-                        // Optionally show an error message to the user
                     }
                 }
 

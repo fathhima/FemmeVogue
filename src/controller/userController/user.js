@@ -353,24 +353,98 @@ const resetPassword = async(req,res) => {
 
 const shop = async (req, res) => {
   try {
-      const user = req.session.user;
-      const category = await categories.find({isDeleted: false}).sort('name');
-      const validCategoryIds = category.map(cat => cat._id);
-      
-      // Fetch products with populated category
-      const baseProducts = await products
-          .find({ 
-              isDeleted: false,
-              category: { $in: validCategoryIds}
-          })
-          .populate('category')
-          .populate('variants');
+      const {
+          search,
+          category,
+          brands,
+          priceRange,
+          sort = '',
+          page = 1,
+          limit = 12
+      } = req.query;
+
+      console.log(search,category,brands,priceRange,sort)
+
+      let query = { isDeleted: false };
+
+      // Search filter
+      if (search) {
+          query.$or = [
+              { brandName: { $regex: search, $options: 'i' } },
+              { description: { $regex: search, $options: 'i' } }
+          ];
+      }
+
+      // Category filter
+      if (category) {
+          const categoryArray = category.split(',');
+          query['category.name'] = { $in: categoryArray };
+      }
+
+      // Brand filter
+      if (brands) {
+          const brandArray = brands.split(',');
+          query.brandName = { $in: brandArray };
+      }
+
+      // Price range filter
+      if (priceRange) {
+          const ranges = priceRange.split(',');
+          const priceQuery = ranges.map(range => {
+              if (range === '5000+') {
+                  return { finalPrice: { $gte: 5000 } };
+              }
+              const [min, max] = range.split('-').map(Number);
+              return {
+                  finalPrice: { $gte: min, $lte: max }
+              };
+          });
+          query.$or = [...(query.$or || []), ...priceQuery];
+      }
+
+      // Sort options
+      let sortOption = {};
+      switch (sort) {
+          case 'price-low':
+              sortOption = { price: 1 };
+              break;
+          case 'price-high':
+              sortOption = { finalPrice: -1 };
+              break;
+          case 'a-z':
+              sortOption = { brandName: 1 };
+              break;
+          case 'z-a':
+              sortOption = { brandName: -1 };
+              break;
+          case 'new':
+              sortOption = { createdAt: -1 };
+              break;
+          case 'popularity':
+              sortOption = { soldCount: -1 };
+              break;
+          default:
+              sortOption = { createdAt: -1 };
+      }
+
+      // Calculate skip for pagination
+      const skip = (page - 1) * limit;
+
+      // Fetch products with filters
+      const [Products, totalCount] = await Promise.all([
+          products.find(query)
+              .populate('category')
+              .populate('variants')
+              .sort(sortOption)
+              .skip(skip)
+              .limit(limit),
+          products.countDocuments(query)
+      ]);
+
 
       // Process products with offers
-      const Products = await Promise.all(baseProducts.map(async (product) => {
-          // Get the first variant since all prices are same
-          const variant = product.variants[0];
-          
+      const processedProducts = await Promise.all(Products.map(async (product) => {
+          const variant = product.variants[0].price;
           if (!variant) {
               return {
                   ...product.toObject(),
@@ -379,32 +453,44 @@ const shop = async (req, res) => {
                   hasOffer: false
               };
           }
-
-          // Calculate price with offers
           const priceInfo = await calculateFinalPrice(product, variant);
-
           return {
               ...product.toObject(),
               ...priceInfo
           };
+
       }));
 
-      // Get minimum price across all products
-      const minPrice = Math.min(
-          ...Products.filter(p => p.finalPrice > 0)
-                    .map(p => p.finalPrice)
-      );
+      // Get categories for sidebar
+      const Categories = await categories.find({ isDeleted: false }).sort('name');
 
-      res.render("user/shop", { 
-          Products, 
-          user, 
-          category,
-          minPrice 
-      });
-      
+      // Render the page or send JSON based on request type
+      if (req.xhr) {
+          res.json({
+              Products: processedProducts,
+              pagination: {
+                  currentPage: page,
+                  totalPages: Math.ceil(totalCount / limit),
+                  totalProducts: totalCount
+              }
+          });
+      } else {
+          res.render("user/shop", {
+              Products: processedProducts,
+              user: req.session.user,
+              Categories,
+              currentPage: page,
+              totalPages: Math.ceil(totalCount / limit)
+          });
+      }
+
   } catch (err) {
       console.error(err);
-      res.status(400).send("something went wrong");
+      if (req.xhr) {
+          res.status(400).json({ error: "Something went wrong" });
+      } else {
+          res.status(400).send("Something went wrong");
+      }
   }
 };
 

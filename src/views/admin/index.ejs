@@ -54,9 +54,9 @@
                                 <input type="text" class="form-control" id="dateRange" readonly>
                             </div>
                             <div class="col-md-5 text-end" style="display: flex; justify-content: end; align-items: center;">
-                                <!-- <button class="btn btn-primary me-2" onclick="generateReport()">
+                                <button class="btn btn-primary me-2" onclick="generateReport()">
                                     <i class="fas fa-sync-alt me-2"></i>Generate Report
-                                </button> -->
+                                </button>
                                 <button class="btn btn-success me-2" onclick="downloadPDF()">
                                     <i class="fas fa-file-pdf me-2"></i>Download PDF
                                 </button>
@@ -104,6 +104,56 @@
                     </div>
                 </div>
 
+                <div class="row mb-4">
+                    <!-- Sales Trend Chart -->
+                    <div class="col-12 mb-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Sales Trend</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="salesTrendChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Products Chart -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Top 10 Products</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="topProductsChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Categories Chart -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Top 10 Categories</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="topCategoriesChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Top Brands Chart -->
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5 class="card-title mb-0">Top 10 Brands</h5>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="topBrandsChart" height="300"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Detailed Report Table -->
                 <div class="card mb-4">
                     <div class="card-header">
@@ -135,6 +185,7 @@
     </div>
 
     <!-- Bootstrap and jQuery JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
     <script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
@@ -144,43 +195,169 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
     <script>
-        $(document).ready(function() {
-            // Initialize DateRangePicker
-            $('#dateRange').daterangepicker({
-                startDate: moment().startOf('month'),
-                endDate: moment().endOf('month'),
-                ranges: {
-                    'Today': [moment(), moment()],
-                    'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
-                    'Last 7 Days': [moment().subtract(6, 'days'), moment()],
-                    'Last 30 Days': [moment().subtract(29, 'days'), moment()],
-                    'This Month': [moment().startOf('month'), moment().endOf('month')],
-                    'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
-                }
-            });
 
-            // Generate initial report
-            generateReport();
+let salesTrendChart, topProductsChart, topCategoriesChart, topBrandsChart;
+
+// Initialize all charts
+function initializeCharts() {
+    // Sales Trend Chart
+    const salesCtx = document.getElementById('salesTrendChart').getContext('2d');
+    salesTrendChart = new Chart(salesCtx, {
+        type: 'line',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Net Sales',
+                borderColor: '#4CAF50',
+                tension: 0.1,
+                data: []
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        callback: function(value) {
+                            return '₹' + value.toLocaleString();
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    // Top Products Chart
+    const productsCtx = document.getElementById('topProductsChart').getContext('2d');
+    topProductsChart = new Chart(productsCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales Amount',
+                backgroundColor: '#2196F3',
+                data: []
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    // Initialize other charts similarly
+    const categoriesCtx = document.getElementById('topCategoriesChart').getContext('2d');
+    topCategoriesChart = new Chart(categoriesCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales Amount',
+                backgroundColor: '#FF9800',
+                data: []
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+
+    const brandsCtx = document.getElementById('topBrandsChart').getContext('2d');
+    topBrandsChart = new Chart(brandsCtx, {
+        type: 'bar',
+        data: {
+            labels: [],
+            datasets: [{
+                label: 'Sales Amount',
+                backgroundColor: '#9C27B0',
+                data: []
+            }]
+        },
+        options: {
+            indexAxis: 'y',
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
+}
+
+$(document).ready(function() {
+        // Your existing daterangepicker initialization
+        $('#dateRange').daterangepicker({
+            startDate: moment().startOf('month'),
+            endDate: moment().endOf('month'),
+            ranges: {
+                'Today': [moment(), moment()],
+                'Yesterday': [moment().subtract(1, 'days'), moment().subtract(1, 'days')],
+                'Last 7 Days': [moment().subtract(6, 'days'), moment()],
+                'Last 30 Days': [moment().subtract(29, 'days'), moment()],
+                'This Month': [moment().startOf('month'), moment().endOf('month')],
+                'Last Month': [moment().subtract(1, 'month').startOf('month'), moment().subtract(1, 'month').endOf('month')]
+            }
         });
 
-        // Function to generate report
+        // Initialize charts
+        initializeCharts();
+
+        // Generate initial report
+        generateReport();
+    });
+
         async function generateReport() {
-            const reportType = $('#reportType').val();
-            const dateRange = $('#dateRange').data('daterangepicker');
-            
-            try {
-                const response = await axios.post('/admin/generate-report', {
+        const reportType = $('#reportType').val();
+        const dateRange = $('#dateRange').data('daterangepicker');
+        
+        try {
+            const [reportResponse, topPerformersResponse] = await Promise.all([
+                axios.post('/admin/generate-report', {
                     reportType: reportType,
                     startDate: dateRange.startDate.format('YYYY-MM-DD'),
                     endDate: dateRange.endDate.format('YYYY-MM-DD')
-                });
+                }),
+                axios.post('/admin/top-performers', {
+                    startDate: dateRange.startDate.format('YYYY-MM-DD'),
+                    endDate: dateRange.endDate.format('YYYY-MM-DD')
+                })
+            ]);
 
-                updateDashboard(response.data);
-            } catch (error) {
-                console.error('Error generating report:', error);
-                alert('Error generating report. Please try again.');
-            }
+            updateDashboard(reportResponse.data);
+            updateCharts(reportResponse.data, topPerformersResponse.data);
+        } catch (error) {
+            console.error('Error generating report:', error);
+            alert('Error generating report. Please try again.');
         }
+    }
+
+    // Function to update charts with new data
+    function updateCharts(reportData, topPerformersData) {
+        // Update Sales Trend Chart
+        const labels = reportData.details.map(item => item.date);
+        const salesData = reportData.details.map(item => item.netSales);
+        
+        salesTrendChart.data.labels = labels;
+        salesTrendChart.data.datasets[0].data = salesData;
+        salesTrendChart.update();
+
+        // Update Top Products Chart
+        topProductsChart.data.labels = topPerformersData.topProducts.map(item => item.name);
+        topProductsChart.data.datasets[0].data = topPerformersData.topProducts.map(item => item.totalSales);
+        topProductsChart.update();
+
+        // Update Top Categories Chart
+        topCategoriesChart.data.labels = topPerformersData.topCategories.map(item => item.name);
+        topCategoriesChart.data.datasets[0].data = topPerformersData.topCategories.map(item => item.totalSales);
+        topCategoriesChart.update();
+
+        // Update Top Brands Chart
+        topBrandsChart.data.labels = topPerformersData.topBrands.map(item => item.name);
+        topBrandsChart.data.datasets[0].data = topPerformersData.topBrands.map(item => item.totalSales);
+        topBrandsChart.update();
+    }
 
         // Function to update dashboard with report data
         function updateDashboard(data) {

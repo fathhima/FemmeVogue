@@ -128,26 +128,29 @@
                                                     </span>
                                             </td>
                                             <td>
-                                                <% if(order.orderStatus !== 'Return_Approved' && order.orderStatus !== 'Return_Rejected'){ %>
-                                                <select class="form-select form-select-sm status-select"
-                                                    data-order-id="<%= order._id %>" <%=order.orderStatus==='cancelled'
-                                                    ? 'disabled' : '' %>>
-                                                    <option value="pending" <%=order.orderStatus==='pending'
-                                                        ? 'selected' : '' %>>Pending</option>
-                                                    <option value="processing" <%=order.orderStatus==='processing'
-                                                        ? 'selected' : '' %>>Processing</option>
-                                                    <option value="shipped" <%=order.orderStatus==='shipped'
-                                                        ? 'selected' : '' %>>Shipped</option>
-                                                    <option value="delivered" <%=order.orderStatus==='delivered'
-                                                        ? 'selected' : '' %>>Delivered</option>
-                                                    <option value="cancelled" <%=order.orderStatus==='cancelled'
-                                                        ? 'selected' : '' %>>Cancelled</option>
-                                                </select>
-                                                <% } else if(order.orderStatus == 'Return_Approved') { %>
-                                                    <p class="text-muted">Return Accepted</p>
-                                                    <% } else { %>
-                                                        <p class="text-muted">Return Rejected</p>
-                                                  <% } %>
+                                                <% if(order.orderStatus !=='Return_Approved' && order.orderStatus
+                                                    !=='Return_Rejected' && order.orderStatus !== 'Return_Requested' ){ %>
+                                                    <select class="form-select form-select-sm status-select"
+                                                        data-order-id="<%= order._id %>"
+                                                        <%=order.orderStatus==='cancelled' ? 'disabled' : '' %>>
+                                                        <option value="pending" <%=order.orderStatus==='pending'
+                                                            ? 'selected' : '' %>>Pending</option>
+                                                        <option value="processing" <%=order.orderStatus==='processing'
+                                                            ? 'selected' : '' %>>Processing</option>
+                                                        <option value="shipped" <%=order.orderStatus==='shipped'
+                                                            ? 'selected' : '' %>>Shipped</option>
+                                                        <option value="delivered" <%=order.orderStatus==='delivered'
+                                                            ? 'selected' : '' %>>Delivered</option>
+                                                        <option value="cancelled" <%=order.orderStatus==='cancelled'
+                                                            ? 'selected' : '' %>>Cancelled</option>
+                                                    </select>
+                                                    <% } else if(order.orderStatus == 'Return_Requested' ) { %>
+                                                        <p class="text-muted">Return Requested</p>
+                                                        <% } else if(order.orderStatus == 'Return_Approved' ) { %>
+                                                            <p class="text-muted">Return Approved</p>
+                                                            <% } else { %>
+                                                                <p class="text-muted">Return Rejected</p>
+                                                                <% } %>
                                             </td>
                                             <td>
                                                 <%= new Date(order.orderedAt).toLocaleDateString() %>
@@ -157,11 +160,13 @@
                                                     onclick="viewOrderDetails('<%= order._id %>')">
                                                     <i class="fas fa-eye"></i>
                                                 </button>
-                                                <% if (order.returnStatus === 'pending' || order.items.some(item => item.returnRequest?.status === 'pending')) { %>
-                                                    <button class="btn btn-warning btn-sm" onclick="viewReturnDetails('<%= order._id %>')">
+                                                <% if (order.returnStatus==='pending' || order.items.some(item=>
+                                                    item.returnRequest?.status === 'pending')) { %>
+                                                    <button class="btn btn-warning btn-sm"
+                                                        onclick="viewReturnDetails('<%= order._id %>')">
                                                         <i class="fas fa-undo"></i> Return Request
                                                     </button>
-                                                <% } %>
+                                                    <% } %>
                                             </td>
                                         </tr>
                                         <% }) %>
@@ -205,11 +210,12 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                     <button type="button" class="btn btn-danger" onclick="handleReturnAction('reject')">Reject</button>
-                    <button type="button" class="btn btn-success" onclick="handleReturnAction('approve')">Approve</button>
+                    <button type="button" class="btn btn-success"
+                        onclick="handleReturnAction('approve')">Approve</button>
                 </div>
             </div>
         </div>
-    </div>    
+    </div>
 
     <!-- Order Details Modal -->
     <div class="modal fade" id="orderDetailsModal" tabindex="-1">
@@ -264,6 +270,7 @@
     <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <!-- SweetAlert -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 
     <script>
         // ====== Helper Functions ======
@@ -333,106 +340,106 @@
         }
 
         function initializeStatusSelects() {
-        document.querySelectorAll('.status-select').forEach(select => {
-        // Remove existing listeners first to prevent duplicates
-        const newSelect = select.cloneNode(true);
-        select.parentNode.replaceChild(newSelect, select);
+            document.querySelectorAll('.status-select').forEach(select => {
+                // Remove existing listeners first to prevent duplicates
+                const newSelect = select.cloneNode(true);
+                select.parentNode.replaceChild(newSelect, select);
 
-        // Store the initial value when the element is created
-        newSelect.setAttribute('data-previous-value', newSelect.value);
+                // Store the initial value when the element is created
+                newSelect.setAttribute('data-previous-value', newSelect.value);
 
-        // Add change event listener
-        newSelect.addEventListener('change', function () {
-            const orderId = this.dataset.orderId;
-            const newStatus = this.value;
-            const cancelledOption = this.querySelector('option[value="cancelled"]');
+                // Add change event listener
+                newSelect.addEventListener('change', function () {
+                    const orderId = this.dataset.orderId;
+                    const newStatus = this.value;
+                    const cancelledOption = this.querySelector('option[value="cancelled"]');
 
-            // If delivered is selected, disable the cancelled option
-            if (newStatus === 'delivered') {
-                cancelledOption.disabled = true;
-            } else {
-                cancelledOption.disabled = false;
-            }
-            
-            updateOrderStatus(orderId, newStatus, this);
-        });
+                    // If delivered is selected, disable the cancelled option
+                    if (newStatus === 'delivered') {
+                        cancelledOption.disabled = true;
+                    } else {
+                        cancelledOption.disabled = false;
+                    }
 
-        // Add focus event listener to store the value before change
-        newSelect.addEventListener('focus', function () {
-            this.setAttribute('data-previous-value', this.value);
-        });
+                    updateOrderStatus(orderId, newStatus, this);
+                });
 
-        // Also handle initial state
-        if (select.value === 'delivered') {
-            const cancelledOption = select.querySelector('option[value="cancelled"]');
-            if (cancelledOption) {
-                cancelledOption.disabled = true;
-            }
+                // Add focus event listener to store the value before change
+                newSelect.addEventListener('focus', function () {
+                    this.setAttribute('data-previous-value', this.value);
+                });
+
+                // Also handle initial state
+                if (select.value === 'delivered') {
+                    const cancelledOption = select.querySelector('option[value="cancelled"]');
+                    if (cancelledOption) {
+                        cancelledOption.disabled = true;
+                    }
+                }
+            });
         }
-    });
-}
 
         // ====== Core Functions ======
         // Update order status
-async function updateOrderStatus(orderId, status, selectElement) {
-    const previousValue = selectElement.getAttribute('data-previous-value');
+        async function updateOrderStatus(orderId, status, selectElement) {
+            const previousValue = selectElement.getAttribute('data-previous-value');
 
-    // Prevent changing to cancelled if previous status was delivered
-    if (previousValue === 'delivered') {
-        showToast('Error', 'Cannot modify a delivered order', true);
-        selectElement.value = previousValue;
-        return;
-    }
-
-    // If status is being changed to 'cancelled', show confirmation toast
-    if (status === 'cancelled') {
-        showToastWithConfirmation(
-            'Confirm Cancellation',
-            'Are you sure you want to cancel this entire order? This action cannot be undone.',
-            async (confirmed) => {
-                if (confirmed) {
-                    try {
-                        setLoading(selectElement, true);
-                        await axios.put(`/admin/orders/${orderId}/status`, { status });
-                        showToast('Success', 'Order cancelled successfully');
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Error:', error);
-                        showToast('Error', 'Failed to cancel order', true);
-                        selectElement.value = previousValue;
-                    } finally {
-                        setLoading(selectElement, false);
-                    }
-                } else {
-                    selectElement.value = previousValue;
-                }
+            // Prevent changing to cancelled if previous status was delivered
+            if (previousValue === 'delivered') {
+                showToast('Error', 'Cannot modify a delivered order', true);
+                selectElement.value = previousValue;
+                return;
             }
-        );
-        return;
-    }
 
-    // For other status updates
-    try {
-        setLoading(selectElement, true);
-        await axios.put(`/admin/orders/${orderId}/status`, { status });
-        showToast('Success', 'Order status updated successfully');
-        
-        // If status is changed to delivered, disable all future changes
-        if (status === 'delivered') {
-            selectElement.disabled = true;
-            const allStatusSelects = document.querySelectorAll(`.status-select[data-order-id="${orderId}"]`);
-            allStatusSelects.forEach(select => {
-                select.disabled = true;
-            });
+            // If status is being changed to 'cancelled', show confirmation toast
+            if (status === 'cancelled') {
+                showToastWithConfirmation(
+                    'Confirm Cancellation',
+                    'Are you sure you want to cancel this entire order? This action cannot be undone.',
+                    async (confirmed) => {
+                        if (confirmed) {
+                            try {
+                                setLoading(selectElement, true);
+                                await axios.put(`/admin/orders/${orderId}/status`, { status });
+                                showToast('Success', 'Order cancelled successfully');
+                                window.location.reload();
+                            } catch (error) {
+                                console.error('Error:', error);
+                                showToast('Error', 'Failed to cancel order', true);
+                                selectElement.value = previousValue;
+                            } finally {
+                                setLoading(selectElement, false);
+                            }
+                        } else {
+                            selectElement.value = previousValue;
+                        }
+                    }
+                );
+                return;
+            }
+
+            // For other status updates
+            try {
+                setLoading(selectElement, true);
+                await axios.put(`/admin/orders/${orderId}/status`, { status });
+                showToast('Success', 'Order status updated successfully');
+
+                // If status is changed to delivered, disable all future changes
+                if (status === 'delivered') {
+                    selectElement.disabled = true;
+                    const allStatusSelects = document.querySelectorAll(`.status-select[data-order-id="${orderId}"]`);
+                    allStatusSelects.forEach(select => {
+                        select.disabled = true;
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                showToast('Error', 'Failed to update order status', true);
+                selectElement.value = previousValue;
+            } finally {
+                setLoading(selectElement, false);
+            }
         }
-    } catch (error) {
-        console.error('Error:', error);
-        showToast('Error', 'Failed to update order status', true);
-        selectElement.value = previousValue;
-    } finally {
-        setLoading(selectElement, false);
-    }
-}
 
         // Cancel individual item
         async function cancelOrderItem(orderId, itemId) {
@@ -677,20 +684,18 @@ async function updateOrderStatus(orderId, status, selectElement) {
 
         // ====== Initialize Everything ======
         document.addEventListener('DOMContentLoaded', function () {
-            // Initialize Bootstrap tooltips
             const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
             tooltipTriggerList.map(function (tooltipTriggerEl) {
                 return new bootstrap.Tooltip(tooltipTriggerEl);
             });
 
-            // Initialize status filter
             document.getElementById('statusFilter').addEventListener('change', filterOrders);
 
-            // Initialize status select handlers
             initializeStatusSelects();
         });
 
         let currentReturnOrder = null;
+        let currentProductId = null; // Add this to track the selected product
 
 async function viewReturnDetails(orderId) {
     try {
@@ -699,21 +704,21 @@ async function viewReturnDetails(orderId) {
         currentReturnOrder = order;
 
         // Populate modal with return details
-        document.getElementById('returnType').textContent = 
-            order.returnStatus === 'pending' ? 'Full Order Return' : 'Partial Return';
+        document.getElementById('returnType').textContent =
+        order.returnStatus === 'pending' ? 'Full Order Return' : 'Partial Return';
         document.getElementById('returnReason').textContent = order.returnReason || 'N/A';
         document.getElementById('returnComments').textContent = order.returnComments || 'N/A';
-        document.getElementById('returnRequestedDate').textContent = 
+        document.getElementById('returnRequestedDate').textContent =
             new Date(order.returnRequestedAt).toLocaleString();
 
         // Handle items display for partial returns
         const itemsContainer = document.getElementById('returnItems');
         itemsContainer.innerHTML = '';
-        
+
         if (order.items.some(item => item.returnRequest?.status === 'pending')) {
             const itemsList = document.createElement('div');
             itemsList.innerHTML = '<h6>Items Requested for Return:</h6>';
-            
+
             order.items.forEach(item => {
                 if (item.returnRequest?.status === 'pending') {
                     itemsList.innerHTML += `
@@ -722,16 +727,39 @@ async function viewReturnDetails(orderId) {
                                 <h6>Product ID: ${item.productId}</h6>
                                 <p>Return Reason: ${item.returnRequest.reason || 'N/A'}</p>
                                 <p>Comments: ${item.returnRequest.comments || 'N/A'}</p>
+                                <button class="btn btn-primary btn-sm" 
+                                    onclick="handleReturnAction('approve', '${item._id}')">
+                                    Approve This Item
+                                </button>
+                                <button class="btn btn-danger btn-sm" 
+                                    onclick="handleReturnAction('reject', '${item._id}')">
+                                    Reject This Item
+                                </button>
                             </div>
                         </div>
                     `;
                 }
             });
-            
+
+            // Add full order approval buttons if needed
+            if (order.items.filter(item => item.returnRequest?.status === 'pending').length > 1) {
+                itemsList.innerHTML += `
+                    <div class="mt-3">
+                        <button class="btn btn-primary" 
+                            onclick="handleReturnAction('approve')">
+                            Approve All Items
+                        </button>
+                        <button class="btn btn-danger" 
+                            onclick="handleReturnAction('reject')">
+                            Reject All Items
+                        </button>
+                    </div>
+                `;
+            }
+
             itemsContainer.appendChild(itemsList);
         }
 
-        // Show modal
         const modal = new bootstrap.Modal(document.getElementById('returnDetailsModal'));
         modal.show();
     } catch (error) {
@@ -743,12 +771,18 @@ async function viewReturnDetails(orderId) {
     }
 }
 
-async function handleReturnAction(action) {
+async function handleReturnAction(action, productId = null) {
     if (!currentReturnOrder) return;
 
     try {
-        const response = await axios.post(`/admin/orders/${currentReturnOrder._id}/return-${action}`);
+        let url = `/admin/orders/${currentReturnOrder._id}/return-${action}`;
         
+        if (productId) {
+            url += `/${productId}`;
+        }
+
+        const response = await axios.post(url);
+
         if (response.status === 200) {
             Swal.fire({
                 icon: 'success',

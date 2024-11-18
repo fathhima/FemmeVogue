@@ -15,7 +15,6 @@ const calculateDiscount = (price, offer) => {
     } else {
         discountAmount = offer.discountValue;
     }
-
     return Math.min(discountAmount, price);
 };
 
@@ -38,21 +37,20 @@ const getApplicableOffers = async (product, category) => {
 };
 
 const calculateFinalPrice = async (product, variant) => {
-    console.log(product,variant)
     try {
         const offers = await getApplicableOffers(product, product.category);
         let bestDiscount = 0;
 
         offers.forEach(offer => {
-            const discount = calculateDiscount(variant.price, offer);
+            const discount = calculateDiscount(variant, offer);
             if (discount > bestDiscount) {
                 bestDiscount = discount;
             }
         });
 
         return {
-            originalPrice: variant.price,
-            finalPrice: variant.price - bestDiscount,
+            originalPrice: variant,
+            finalPrice: variant - bestDiscount,
             discountAmount: bestDiscount,
             hasOffer: bestDiscount > 0
         };

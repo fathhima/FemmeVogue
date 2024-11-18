@@ -1,0 +1,181 @@
+<div class="bg-white shadow-md rounded-lg p-6">
+    <div class="mb-8 p-6 bg-gray-50 rounded-lg">
+        <h2 class="text-2xl font-semibold mb-4">Wallet Balance</h2>
+        <div class="flex items-center justify-between">
+            <div>
+                <p class="text-gray-600">Available Balance</p>
+                <p class="text-3xl font-bold text-green-600">₹<%= user.walletBalance %></p>
+            </div>
+            <button onclick="addMoney()" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700">
+                Add Money
+            </button>
+        </div>
+    </div>
+
+    <!-- Transaction History Section -->
+    <div>
+        <h3 class="text-xl font-semibold mb-4">Transaction History</h3>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Date
+                        </th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Transaction ID
+                        </th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Type
+                        </th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Amount
+                        </th>
+                        <th class="px-6 py-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    <% transactions.forEach(transaction => { %>
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= new Date(transaction.Date).toLocaleDateString() %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <%= transaction.transactionId %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    <%= transaction.type === 'credit' ? 'bg-green-100 text-green-800' : 
+                                        transaction.type === 'debit' ? 'bg-red-100 text-red-800' : 
+                                        'bg-blue-100 text-blue-800' %>">
+                                    <%= transaction.type.toUpperCase() %>
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                ₹<%= transaction.amount %>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full 
+                                    <%= transaction.status === 'success' ? 'bg-green-100 text-green-800' : 
+                                        'bg-red-100 text-red-800' %>">
+                                    <%= transaction.status.toUpperCase() %>
+                                </span>
+                            </td>
+                        </tr>
+                    <% }) %>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Scripts -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
+
+<script>
+async function addMoney() {
+    try {
+        const result = await Swal.fire({
+            title: 'Add Money to Wallet',
+            input: 'number',
+            inputLabel: 'Enter Amount (₹)',
+            inputPlaceholder: 'Enter amount to add',
+            showCancelButton: true,
+            inputValidator: (value) => {
+                if (!value || value <= 0) {
+                    return 'Please enter a valid amount!'
+                }
+            }
+        });
+
+        if (result.isConfirmed) {
+            await initiateRazorpayPayment(result.value);
+        }
+    } catch (error) {
+        console.error('Error in addMoney:', error);
+        Swal.fire('Error', 'Failed to process request', 'error');
+    }
+}
+
+async function initiateRazorpayPayment(amount) {
+    try {
+        const response = await axios.post('/profile/wallet/add-payment', {
+            amount: amount * 100 
+        });
+
+        const options = {
+            key: '<%= razorpayKey %>',
+            amount: response.data.amount,
+            currency: "INR",
+            name: "Wallet Recharge",
+            description: "Add money to wallet",
+            order_id: response.data.orderId,
+            handler: async function (response) {
+                await verifyPayment(response);
+            },
+            prefill: {
+                name: "<%= user.name %>",
+                email: "<%= user.email %>",
+                contact: "<%= user.phone %>"
+            },
+            theme: {
+                color: "#3B82F6"
+            }
+        };
+
+        const rzp = new Razorpay(options);
+        rzp.open();
+    } catch (error) {
+        console.error('Error in initiateRazorpayPayment:', error);
+        Swal.fire('Error', 'Failed to initiate payment', 'error');
+    }
+}
+
+async function verifyPayment(paymentResponse) {
+    try {
+        const response = await axios.post('/profile/wallet/verify-payment', paymentResponse);
+        
+        if (response.data.success) {
+            await Swal.fire('Success', 'Money added to wallet successfully!', 'success');
+            window.location.reload();
+        } else {
+            throw new Error('Payment verification failed');
+        }
+    } catch (error) {
+        console.error('Error in verifyPayment:', error);
+        Swal.fire('Error', 'Payment verification failed', 'error');
+    }
+}
+
+async function payWithWallet(orderId, amount) {
+    try {
+        const response = await axios.post('/api/wallet/pay', {
+            orderId,
+            amount
+        });
+
+        if (response.data.success) {
+            return { success: true, message: 'Payment successful' };
+        } else {
+            throw new Error(response.data.message || 'Payment failed');
+        }
+    } catch (error) {
+        console.error('Error in payWithWallet:', error);
+        throw new Error('Wallet payment failed');
+    }
+}
+
+async function checkWalletBalance() {
+    try {
+        const response = await axios.get('/api/wallet/balance');
+        return response.data.balance;
+    } catch (error) {
+        console.error('Error in checkWalletBalance:', error);
+        throw new Error('Failed to fetch wallet balance');
+    }
+}
+</script>

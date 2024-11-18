@@ -8,9 +8,9 @@ const availableCoupons = async (req, res) => {
         $match: {
           isActive: true,
           userSpecific: false,
-          validUntil: { $gt: currentDate },
-          validFrom: { $lt: currentDate },
-          $expr: { $gt: ["$usageLimit", "$usedCount"] },
+          // validUntil: { $gt: currentDate },
+          // validFrom: { $lt: currentDate },
+          // $expr: { $gt: ["$usageLimit", "$usedCount"] },
         },
       },
     ]);

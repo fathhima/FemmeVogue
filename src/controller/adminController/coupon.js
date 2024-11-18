@@ -84,7 +84,7 @@ const couponCreate = async (req, res) => {
             });
         }
 
-        if (discountType === 'percentage' && (discountAmount <= 0 || discountAmount > 100)) {
+        if (discountType === 'percentage' && (discountAmount <= 0 || discountAmount >= 100)) {
             return res.status(400).json({
                 success: false,
                 message: 'Percentage discount must be between 0 and 100'

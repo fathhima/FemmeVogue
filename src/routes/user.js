@@ -77,15 +77,27 @@ router.delete('/profile/address/:id',checkSession,User.addressDelete)
 
 router.get('/profile/orders',checkSession,User.orders)
 
+router.post('/orders/retry-razorpay-payment',checkSession,payment.retryFailedPayment)
+
 router.post('/profile/orders/:id/cancel',checkSession,User.cancelOrder)
 
 router.post('/profile/orders/:orderId/products/:productId/cancel',checkSession,User.productCancel)
 
 router.post('/profile/orders/:id/return',checkSession,User.returnOrder)
 
+router.post('/profile/orders/:orderId/products/:productId/return',checkSession,User.returnProduct)
+
+router.get('/profile/orders/:orderId/invoice',checkSession,User.generateInvoice)
+
 router.get('/profile/wishlist',checkSession,User.wishlist)
 
 router.delete('/profile/wishlist/:id',checkSession,User.removeWishlist)
+
+router.get('/profile/wallet',checkSession,User.wallet)
+
+router.post('/profile/wallet/add-payment',checkSession,User.addPayment)
+
+router.post('/profile/wallet/verify-payment',checkSession,User.verifyPayment)
 
 router.post('/add-to-cart',checkSession,cart.addToCart)
 
@@ -110,6 +122,8 @@ router.post('/checkout/place-order-cod',checkSession,payment.placeOrderCod)
 router.post('/checkout/create-razorpay-order',checkSession,payment.placeOrderRazorPay)
 
 router.post('/checkout/verify-razorpay-payment',checkSession,payment.verifyPlaceOrderRazorPay)
+
+router.post('/checkout/process-wallet-payment',checkSession,payment.placeOrderWallet)
 
 router.get('/order/confirmation/:id',checkSession,payment.orderConfirm)
 

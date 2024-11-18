@@ -6,9 +6,10 @@ const adminRoutes = require("./routes/admin");
 const path = require("path");
 const nocache = require("nocache");
 const session = require("express-session");
+const MongoStore = require("connect-mongo")
 require("dotenv").config();
-const passport = require('passport')
-const flash = require('connect-flash')
+const passport = require("passport")
+const flash = require("connect-flash")
 const PORT = process.env.PORT || 3000;
 
 app.use(express.urlencoded({ extended: true }));
@@ -20,6 +21,9 @@ app.use(
     secret: "mysecretkey",
     resave: false,
     saveUninitialized: true,
+    store: MongoStore.create({
+      mongoUrl: "mongodb+srv://fathima:BXOxNXpSkQLR3DSW@cluster0.hnocn.mongodb.net/FemmeVogue"
+    }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24,
     },
