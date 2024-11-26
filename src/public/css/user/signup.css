@@ -1,0 +1,73 @@
+body {
+  background-color: #f9f9f9;
+  font-family: "Arial", sans-serif;
+}
+
+.signup-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh; /* Full viewport height */
+  padding: 20px;
+}
+
+.signup-box {
+  background-color: white;
+  padding: 40px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  width: 100%;
+}
+
+.signup-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+h2 {
+  font-weight: 700;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+a {
+  color: #007bff; /* Keep the link color blue */
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  border-radius: 8px;
+}
+
+/* Default styles for inputs and buttons */
+input,
+button {
+  border: 1px solid #ddd; /* Default border */
+  transition: border-color 0.3s ease; /* Smooth transition */
+}
+
+/* Remove blue outline and change border color to black on focus */
+input:focus {
+  outline: none !important;
+  border-color: black !important;
+  box-shadow: 0 0 5px black !important;
+}
+
+/* Remove the default blue outline from browsers */
+input:focus-visible,
+button:focus-visible {
+  outline: none; /* Remove blue outline */
+}
+
+/* Responsive Design */
+@media screen and (max-width: 768px) {
+  .signup-box {
+    padding: 20px;
+  }
+}

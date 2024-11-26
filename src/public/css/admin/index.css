@@ -1,0 +1,46 @@
+
+        body {
+            overflow-x: hidden;
+        }
+        #sidebar-wrapper {
+            min-height: 100vh; /* Full-height sidebar */
+            width: 250px; /* Increased width for sidebar */
+        }
+        .sidebar-heading {
+            padding: 15px 20px;
+            font-size: 1.5rem; /* Increased font size */
+            color: #fff;
+            background-color: #343a40;
+        }
+        .list-group-item {
+            padding: 10px 20px;
+        }
+        .list-group-item.active {
+            background-color: #495057;
+        }
+        .card {
+            transition: transform 0.2s;
+        }
+        .card:hover {
+            transform: scale(1.05);
+        }
+        /* Ensure the content takes up the full width */
+        #page-content-wrapper {
+            width: 100%;
+            padding: 20px;
+        }
+        .container-fluid {
+            max-width: 100%;
+        }
+        /* Style for the search bar */
+        .search-form {
+            width: 500px; /* Set the width of the search bar */
+        }
+        /* Custom alert style without background color */
+        .alert.alert-success,
+        .alert.alert-danger {
+        background-color: transparent;
+        color: inherit; /* Keeps text color consistent */
+        border: none;
+        box-shadow: none; /* Removes shadow if any */
+}

@@ -1,0 +1,44 @@
+#wrapper {
+    display: flex;
+    flex-direction: row; /* Ensure the sidebar and content are side by side */
+    height: 100vh; /* Full viewport height */
+}
+
+#sidebar-wrapper {
+    width: 250px; /* Fixed width for sidebar */
+    flex-shrink: 0; /* Prevent sidebar from shrinking */
+    background-color: #343a40; /* Sidebar background color */
+    color: #fff;
+    padding-top: 20px;
+    height: 100vh; /* Sidebar should stretch to full height */
+    position: fixed; /* Make the sidebar fixed on the left */
+    top: 0;
+    left: 0;
+}
+
+#page-content-wrapper {
+    flex-grow: 1; /* Take up remaining space */
+    margin-left: 250px; /* Leave space for sidebar */
+    padding: 20px;
+}
+
+.table-responsive {
+    overflow-x: auto;
+}
+
+.custom-swal {
+    width: 400px; 
+    max-width: 100%; 
+    height: auto; 
+    padding: 5px; 
+}
+
+.custom-swal .swal2-title {
+    font-size: 1rem; 
+    margin: 5px 0; 
+}
+
+.custom-swal .swal2-content {
+    font-size: 0.9rem; 
+    padding: 5px 0; 
+}
