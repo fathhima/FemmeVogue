@@ -19,7 +19,120 @@ let transporter = nodemailer.createTransport({
 const homePage = async (req, res) => {
   try {
     const user = req.session.user;
-    res.render("user/index", { user });
+    const trendingEthnic = await products.aggregate([
+      {
+        $lookup: {
+          from: 'categories', 
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      {
+        $unwind: '$category'
+      },
+      {
+        $match: {
+          'category.name': { $in: ['Salwars', 'Sarees'] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'productvariants',
+          localField: 'variants',
+          foreignField: '_id',
+          as: 'variants'
+        }
+      },
+      {
+        $limit: 4
+      }
+    ]);
+    
+    // For western wear
+    const trendingWestern = await products.aggregate([
+      {
+        $lookup: {
+          from: 'categories', 
+          localField: 'category',
+          foreignField: '_id',
+          as: 'category'
+        }
+      },
+      {
+        $unwind: '$category'
+      },
+      {
+        $match: {
+          'category.name': { $in: ['T-Shirt', 'Shirts', 'Jeans', 'tops'] }
+        }
+      },
+      {
+        $lookup: {
+          from: 'productvariants',
+          localField: 'variants',
+          foreignField: '_id',
+          as: 'variants'
+        }
+      },
+      {
+        $limit: 4
+      }
+    ]);
+
+    const processedEthnic = await Promise.all(trendingEthnic.map(async (product) => {
+      const variant = product.variants[0]?.price;
+      if (!variant) {
+        return {
+          ...product,
+          finalPrice: 0,
+          originalPrice: 0,
+          hasOffer: false,
+          discountAmount: 0
+        };
+      }
+      const priceInfo = await calculateFinalPrice(product, variant);
+      return {
+        ...product,
+        ...priceInfo,
+        image: product.image || [],
+        category: {
+          ...product.category,
+          name: product.category?.name || 'Uncategorized'
+        }
+      };
+    }));
+
+    // Process western wear products with price calculations
+    const processedWestern = await Promise.all(trendingWestern.map(async (product) => {
+      const variant = product.variants[0]?.price;
+      if (!variant) {
+        return {
+          ...product,
+          finalPrice: 0,
+          originalPrice: 0,
+          hasOffer: false,
+          discountAmount: 0
+        };
+      }
+
+      const priceInfo = await calculateFinalPrice(product, variant);
+      return {
+        ...product,
+        ...priceInfo,
+        image: product.image || [],
+        category: {
+          ...product.category,
+          name: product.category?.name || 'Uncategorized'
+        }
+      };
+    }));
+
+    res.render("user/index", { 
+      user,
+      trendingEthnic: processedEthnic,
+      trendingWestern: processedWestern 
+    });
   } catch (err) {
     console.error(err);
     res.status(400).send("something went wrong");
@@ -353,145 +466,189 @@ const resetPassword = async(req,res) => {
 
 const shop = async (req, res) => {
   try {
-      const {
-          search,
-          category,
-          brands,
-          priceRange,
-          sort = '',
-          page = 1,
-          limit = 12
-      } = req.query;
+    const {
+        search,
+        category,
+        brands,
+        priceRange,
+        sort = '',
+        page = 1,
+        limit = 12
+    } = req.query;
 
-      console.log(search,category,brands,priceRange,sort)
+    let query = { isDeleted: false };
+    let sortOption = {};
 
-      let query = { isDeleted: false };
+    if (search) {
+        const searchRegex = new RegExp(search.trim(), 'i');
+        query.$or = [
+            { brandName: searchRegex },
+            { description: searchRegex },
+            { 'category.name': searchRegex }
+        ];
+    }
 
-      // Search filter
-      if (search) {
-          query.$or = [
-              { brandName: { $regex: search, $options: 'i' } },
-              { description: { $regex: search, $options: 'i' } }
-          ];
-      }
+    if (category) {
+        const categoryArray = category.split(',').map(cat => cat.trim());
+        query['category.name'] = { $in: categoryArray };
+    }
 
-      // Category filter
-      if (category) {
-          const categoryArray = category.split(',');
-          query['category.name'] = { $in: categoryArray };
-      }
+    if (brands) {
+        const brandArray = brands.split(',').map(brand => brand.trim());
+        query.brandName = { $in: brandArray };
+    }
 
-      // Brand filter
-      if (brands) {
-          const brandArray = brands.split(',');
-          query.brandName = { $in: brandArray };
-      }
+    if (priceRange) {
+        const ranges = priceRange.split(',');
+        const priceQuery = ranges.map(range => {
+            if (range === '5000+') {
+                return { variants: { $elemMatch: { price: { $gte: 5000 } } } };
+            }
+            const [min, max] = range.split('-').map(Number);
+            return {
+                variants: {
+                    $elemMatch: {
+                        price: { 
+                            $gte: min, 
+                            $lte: max 
+                        }
+                    }
+                }
+            };
+        });
 
-      // Price range filter
-      if (priceRange) {
-          const ranges = priceRange.split(',');
-          const priceQuery = ranges.map(range => {
-              if (range === '5000+') {
-                  return { finalPrice: { $gte: 5000 } };
-              }
-              const [min, max] = range.split('-').map(Number);
-              return {
-                  finalPrice: { $gte: min, $lte: max }
-              };
-          });
-          query.$or = [...(query.$or || []), ...priceQuery];
-      }
+        query = {
+            ...query,
+            $or: [...(query.$or || []), ...priceQuery]
+        };
+    }
 
-      // Sort options
-      let sortOption = {};
-      switch (sort) {
-          case 'price-low':
-              sortOption = { price: 1 };
-              break;
-          case 'price-high':
-              sortOption = { finalPrice: -1 };
-              break;
-          case 'a-z':
-              sortOption = { brandName: 1 };
-              break;
-          case 'z-a':
-              sortOption = { brandName: -1 };
-              break;
-          case 'new':
-              sortOption = { createdAt: -1 };
-              break;
-          case 'popularity':
-              sortOption = { soldCount: -1 };
-              break;
-          default:
-              sortOption = { createdAt: -1 };
-      }
+    switch (sort) {
+        case 'price-low':
+            sortOption = { 'variants.0.price': 1 };
+            break;
+        case 'price-high':
+            sortOption = { 'variants.0.price': -1 };
+            break;
+        case 'a-z':
+            sortOption = { brandName: 1 };
+            break;
+        case 'z-a':
+            sortOption = { brandName: -1 };
+            break;
+        case 'new':
+            sortOption = { createdAt: -1 };
+            break;
+        case 'popularity':
+            sortOption = { soldCount: -1 };
+            break;
+        default:
+            sortOption = { createdAt: -1 };
+    }
 
-      // Calculate skip for pagination
-      const skip = (page - 1) * limit;
+    const skip = (parseInt(page) - 1) * parseInt(limit);
 
-      // Fetch products with filters
-      const [Products, totalCount] = await Promise.all([
-          products.find(query)
-              .populate('category')
-              .populate('variants')
-              .sort(sortOption)
-              .skip(skip)
-              .limit(limit),
-          products.countDocuments(query)
-      ]);
+    const [Products, totalCount] = await Promise.all([
+        products.find(query)
+            .populate({
+                path: 'category',
+                select: 'name'
+            })
+            .populate({
+                path: 'variants',
+                select: 'price stock'
+            })
+            .sort(sortOption)
+            .skip(skip)
+            .limit(parseInt(limit))
+            .lean(), 
+        products.countDocuments(query)
+    ]);
 
+    const processedProducts = await Promise.all(Products.map(async (product) => {
+        const variant = product.variants[0]?.price;
+        if (!variant) {
+            return {
+                ...product,
+                finalPrice: 0,
+                originalPrice: 0,
+                hasOffer: false,
+                discountAmount: 0
+            };
+        }
 
-      // Process products with offers
-      const processedProducts = await Promise.all(Products.map(async (product) => {
-          const variant = product.variants[0].price;
-          if (!variant) {
-              return {
-                  ...product.toObject(),
-                  finalPrice: 0,
-                  originalPrice: 0,
-                  hasOffer: false
-              };
-          }
-          const priceInfo = await calculateFinalPrice(product, variant);
-          return {
-              ...product.toObject(),
-              ...priceInfo
-          };
+        const priceInfo = await calculateFinalPrice(product, variant);
+        return {
+            ...product,
+            ...priceInfo,
+            image: product.image || [], 
+            category: {
+                ...product.category,
+                name: product.category?.name || 'Uncategorized'
+            }
+        };
+    }));
 
-      }));
+    const Categories = await categories.aggregate([
+        { $match: { isDeleted: false } },
+        { $sort: { name: 1 } },
+        {
+            $lookup: {
+                from: 'products',
+                localField: '_id',
+                foreignField: 'category',
+                as: 'products'
+            }
+        },
+        {
+            $project: {
+                name: 1,
+                productCount: { $size: '$products' }
+            }
+        }
+    ]);
 
-      // Get categories for sidebar
-      const Categories = await categories.find({ isDeleted: false }).sort('name');
+    const paginationData = {
+        currentPage: parseInt(page),
+        totalPages: Math.ceil(totalCount / parseInt(limit)),
+        totalProducts: totalCount,
+        hasNextPage: skip + processedProducts.length < totalCount,
+        hasPrevPage: page > 1
+    };
 
-      // Render the page or send JSON based on request type
-      if (req.xhr) {
-          res.json({
-              Products: processedProducts,
-              pagination: {
-                  currentPage: page,
-                  totalPages: Math.ceil(totalCount / limit),
-                  totalProducts: totalCount
-              }
-          });
-      } else {
-          res.render("user/shop", {
-              Products: processedProducts,
-              user: req.session.user,
-              Categories,
-              currentPage: page,
-              totalPages: Math.ceil(totalCount / limit)
-          });
-      }
+    if (req.xhr) {
+        return res.json({
+            success: true,
+            Products: processedProducts,
+            pagination: paginationData,
+            Categories
+        });
+    }
 
-  } catch (err) {
-      console.error(err);
-      if (req.xhr) {
-          res.status(400).json({ error: "Something went wrong" });
-      } else {
-          res.status(400).send("Something went wrong");
-      }
-  }
+    return res.render("user/shop", {
+        Products: processedProducts,
+        Categories,
+        user: req.session.user,
+        currentPage: paginationData.currentPage,
+        totalPages: paginationData.totalPages,
+        query: req.query 
+    });
+
+} catch (error) {
+    console.error('Shop Controller Error:', error);
+    
+    if (req.xhr) {
+        return res.status(500).json({
+            success: false,
+            error: "An error occurred while fetching products"
+        });
+    }
+    
+    return res.status(500).render("error", {
+        message: "An error occurred while loading the shop",
+        error: process.env.NODE_ENV === 'development' ? error : {}
+    });
+}
 };
 
 const addToWishlist = async (req, res) => {

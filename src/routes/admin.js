@@ -86,6 +86,8 @@ router.patch("/products/toggle/:productId",checkSession, admin.productListUnlist
 
 router.get('/orders',checkSession,admin.loadOrders)
 
+router.get('/orders/filter',checkSession,admin.filterOrders)
+
 router.get('/orders/:id',checkSession,admin.orderDetails)
 
 router.put('/orders/:id/status',checkSession,admin.orderStatus)

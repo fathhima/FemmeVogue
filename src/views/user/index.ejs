@@ -1,12 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-
 	<title>Home</title>
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-
 	<!--===============================================================================================-->
 	<link rel="icon" type="image/png" href="/images/home/favicon.png" />
 	<!--===============================================================================================-->
@@ -37,6 +34,29 @@
 	<link rel="stylesheet" type="text/css" href="/css/util.css">
     <link rel="stylesheet" type="text/css" href="/css/main.css">
 	<!--===============================================================================================-->
+	<style>
+		.trending-section {
+		  padding: 2rem 0;
+		}
+		
+		.section-title {
+		  font-size: 1.5rem;
+		  font-weight: bold;
+		  margin-bottom: 1.5rem;
+		  text-align: center;
+		}
+		
+		.trending-ethnic,
+		.trending-western {
+		  margin-bottom: 3rem;
+		}
+		
+		@media (min-width: 1024px) {
+		  .card-container {
+			grid-template-columns: repeat(4, 1fr);
+		  }
+		}
+		</style>
 </head>
 
 <body class="animsition">
@@ -48,8 +68,8 @@
 		<section class="section-slide">
 			<div class="wrap-slick1">
 				<div class="slick1">
-					<div class="item-slick1" style="background-image: url(images/slide-01.jpg);">
-						<div class="container h-full">
+					<!-- <div class="item-slick1" style="background-image: url(images/home/banner-1.png);"> -->
+						<!-- <div class="container h-full">
 							<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 								<div class="layer-slick1 animated visible-false" data-appear="fadeInDown"
 									data-delay="0">
@@ -72,11 +92,11 @@
 									</a>
 								</div>
 							</div>
-						</div>
-					</div>
+						</div> -->
+					<!-- </div> -->
 
-					<div class="item-slick1" style="background-image: url(images/slide-02.jpg);">
-						<div class="container h-full">
+					<div class="item-slick1" style="background-image: url(images/home/banner-2.png);">
+						<!-- <div class="container h-full">
 							<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 								<div class="layer-slick1 animated visible-false" data-appear="rollIn" data-delay="0">
 									<span class="ltext-101 cl2 respon2">
@@ -99,11 +119,11 @@
 									</a>
 								</div>
 							</div>
-						</div>
+						</div> -->
 					</div>
 
-					<div class="item-slick1" style="background-image: url(images/slide-03.jpg);">
-						<div class="container h-full">
+					<!-- <div class="item-slick1" style="background-image: url(images/home/banner-3.png);"> -->
+						<!-- <div class="container h-full">
 							<div class="flex-col-l-m h-full p-t-100 p-b-30 respon5">
 								<div class="layer-slick1 animated visible-false" data-appear="rotateInDownLeft"
 									data-delay="0">
@@ -127,14 +147,100 @@
 									</a>
 								</div>
 							</div>
-						</div>
-					</div>
+						</div> -->
+					<!-- </div> -->
 				</div>
 			</div>
 		</section>
 
-		<!-- Product -->
-
+		<div class="trending-section">
+			<!-- Ethnic Wear Section -->
+			<section class="trending-ethnic">
+			  <h2 class="section-title">TRENDING IN ETHNIC WEAR</h2>
+			  <div class="card-container">
+				<% trendingEthnic.forEach(product => { %>
+				  <div class="card" data-category="<%= product.category.name %>"
+					data-brand="<%= product.brandName %>"
+					data-price="<%= product.finalPrice || product.originalPrice %>"
+					data-name="<%= product.brandName %>">
+					<a href="/product-detail/<%= product._id%>">
+					  <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+					  <div class="card-content">
+						<h3 class="card-title">
+						  <%= product.brandName %>
+						</h3>
+						<p class="card-description">
+						  <%= product.description %>
+						</p>
+						<div class="price-wishlist">
+						  <div class="price-container">
+							<% if (product.hasOffer) { %>
+							  <p class="card-price">
+								Rs. <%= Math.floor(product.finalPrice) %>
+								<span class="original-price">Rs. <%= Math.floor(product.originalPrice) %></span>
+								<% const discountPercent = Math.floor((product.discountAmount / product.originalPrice) * 100) %>
+								<span class="discount-percent">-<%= discountPercent %>%</span>
+							  </p>
+							<% } else { %>
+							  <p class="card-price">Rs. <%= Math.floor(product.originalPrice) %></p>
+							<% } %>
+						  </div>
+						  <button onclick="toggleWishlist('<%= product._id %>', event)"
+							class="wishlist-btn" data-product-id="<%= product._id %>">
+							<i class="wishlist-icon far fa-heart"></i>
+						  </button>
+						</div>
+					  </div>
+					</a>
+				  </div>
+				<% }); %>
+			  </div>
+			</section>
+		  
+			<!-- Western Wear Section -->
+			<section class="trending-western">
+			  <h2 class="section-title">TRENDING IN WESTERN WEAR</h2>
+			  <div class="card-container">
+				<% trendingWestern.forEach(product => { %>
+				  <div class="card" data-category="<%= product.category.name %>"
+					data-brand="<%= product.brandName %>"
+					data-price="<%= product.finalPrice || product.originalPrice %>"
+					data-name="<%= product.brandName %>">
+					<a href="/product-detail/<%= product._id%>">
+					  <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+					  <div class="card-content">
+						<h3 class="card-title">
+						  <%= product.brandName %>
+						</h3>
+						<p class="card-description">
+						  <%= product.description %>
+						</p>
+						<div class="price-wishlist">
+						  <div class="price-container">
+							<% if (product.hasOffer) { %>
+							  <p class="card-price">
+								Rs. <%= Math.floor(product.finalPrice) %>
+								<span class="original-price">Rs. <%= Math.floor(product.originalPrice) %></span>
+								<% const discountPercent = Math.floor((product.discountAmount / product.originalPrice) * 100) %>
+								<span class="discount-percent">-<%= discountPercent %>%</span>
+							  </p>
+							<% } else { %>
+							  <p class="card-price">Rs. <%= Math.floor(product.originalPrice) %></p>
+							<% } %>
+						  </div>
+						  <button onclick="toggleWishlist('<%= product._id %>', event)"
+							class="wishlist-btn" data-product-id="<%= product._id %>">
+							<i class="wishlist-icon far fa-heart"></i>
+						  </button>
+						</div>
+					  </div>
+					</a>
+				  </div>
+				<% }); %>
+			  </div>
+			</section>
+		  </div>
+		  
 
 		<!-- Footer -->
 		<%-include("partials/footer")%>

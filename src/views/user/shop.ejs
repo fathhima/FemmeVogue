@@ -35,228 +35,7 @@
     <link rel="stylesheet" type="text/css" href="/css/util.css">
     <link rel="stylesheet" type="text/css" href="/css/main.css">
     <!--===============================================================================================-->
-
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
-    <style>
-        .main-container {
-            display: flex;
-            gap: 2rem;
-            padding: 2rem;
-        }
-
-        .filter-sidebar {
-            width: 280px;
-            padding: 1rem;
-            background: #fff;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            margin-top: 100px;
-        }
-
-        .filter-section {
-            margin-bottom: 1.5rem;
-        }
-
-        .filter-title {
-            font-size: 1.1rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-        }
-
-        .search-sort-container {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 2rem;
-        }
-
-        .search-container {
-            flex: 1;
-            max-width: 400px;
-            margin-right: 1rem;
-        }
-
-        .search-input {
-            width: 100%;
-            padding: 0.5rem 1rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .sort-container {
-            min-width: 200px;
-        }
-
-        .sort-select {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .brand-search {
-            width: 100%;
-            padding: 0.5rem;
-            margin-bottom: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-        }
-
-        .brand-list {
-            max-height: 200px;
-            overflow-y: auto;
-        }
-
-        .price-ranges {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .color-options {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-        }
-
-        .color-option {
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            cursor: pointer;
-            border: 2px solid transparent;
-        }
-
-        .color-option.selected {
-            border-color: #000;
-        }
-
-        .products-container {
-            flex: 1;
-            margin-top: 100px;
-        }
-
-        /* .card-container {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(284px, 1fr));
-            gap: 1.5rem;
-        } */
-
-        .active-filters {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
-            margin-bottom: 1rem;
-        }
-
-        .filter-tag {
-            background: #f0f0f0;
-            padding: 0.25rem 0.5rem;
-            border-radius: 4px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .filter-tag button {
-            border: none;
-            background: none;
-            cursor: pointer;
-            padding: 0;
-            color: #666;
-        }
-
-        .checkbox-group {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .filter-section {
-            border-bottom: 1px solid #eee;
-            padding-bottom: 1.5rem;
-            margin-bottom: 1.5rem;
-        }
-
-        .filter-section:last-child {
-            border-bottom: none;
-            padding-bottom: 0;
-        }
-
-        .category-search,
-        .brand-search {
-            width: 100%;
-            padding: 0.5rem;
-            border: 1px solid #ddd;
-            border-radius: 4px;
-            margin-bottom: 1rem;
-            font-size: 0.9rem;
-        }
-
-        .checkbox-label {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0.25rem 0;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-
-        .checkbox-label:hover {
-            background-color: #f5f5f5;
-        }
-
-        .checkbox-label input[type="checkbox"] {
-            margin-right: 8px;
-        }
-
-        .count {
-            color: #666;
-            font-size: 0.85rem;
-            margin-left: auto;
-        }
-
-        .category-list,
-        .brand-list {
-            max-height: 250px;
-            overflow-y: auto;
-            scrollbar-width: thin;
-            scrollbar-color: #888 #f1f1f1;
-        }
-
-        .category-list::-webkit-scrollbar,
-        .brand-list::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .category-list::-webkit-scrollbar-track,
-        .brand-list::-webkit-scrollbar-track {
-            background: #f1f1f1;
-            border-radius: 3px;
-        }
-
-        .category-list::-webkit-scrollbar-thumb,
-        .brand-list::-webkit-scrollbar-thumb {
-            background: #888;
-            border-radius: 3px;
-        }
-
-        .checkbox-group label {
-            display: flex;
-            align-items: center;
-            padding: 6px 0;
-        }
-    </style>
-
 </head>
 
 <body class="animsition">
@@ -271,14 +50,13 @@
                 <div class="filter-section">
                     <h3 class="filter-title">Categories</h3>
                     <input type="text" class="category-search" placeholder="Search categories..." id="categorySearch">
-                    <div class="category-list checkbox-group">
+                    <div class="category-list checkbox-group" style="padding-right: 10px;">
                         <% const categories=[...new Set(Products.map(p=> p.category.name))].sort() %>
                             <% Categories.forEach(category=> { %>
                                 <label class="checkbox-label">
                                     <input type="checkbox" name="category" value="<%= category %>">
                                     <%= category.name %>
-                                        <% // Count products in each category 
-                                        const count=Products.filter(p=>
+                                        <% const count=Products.filter(p=>
                                             p.category.name === category).length
                                             %>
                                             <span class="count">(<%= count %>)</span>
@@ -419,7 +197,8 @@
 
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
         <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
         <script>
 
@@ -453,6 +232,26 @@
                     };
                 }
 
+                // Update URL with current filters
+                function updateURL() {
+                    const params = new URLSearchParams();
+
+                    // Add each filter to URL params if it has a value
+                    Object.entries(currentFilters).forEach(([key, value]) => {
+                        if (Array.isArray(value) && value.length > 0) {
+                            params.set(key, value.join(','));
+                        } else if (value && !Array.isArray(value)) {
+                            params.set(key, value);
+                        }
+                    });
+
+                    // Construct the new URL
+                    const newURL = `${window.location.pathname}${params.toString() ? '?' + params.toString() : ''}`;
+
+                    // Update browser history without reloading the page
+                    window.history.pushState({}, '', newURL);
+                }
+
                 // Fetch products with filters using axios
                 async function fetchProducts(showLoader = true) {
                     if (showLoader) {
@@ -475,10 +274,10 @@
                                 'X-Requested-With': 'XMLHttpRequest'
                             }
                         });
+                        console.log(response.data)
 
                         const data = response.data;
                         updateProductsGrid(data.Products);
-                        // updatePagination(data.pagination);
                         updateURL();
                     } catch (error) {
                         console.error('Error fetching products:', error);
@@ -486,20 +285,38 @@
                     }
                 }
 
-                // Update products grid
+                // Update products grid with the original card structure
                 function updateProductsGrid(products) {
-                    console.log(products)
                     productsGrid.innerHTML = products.map(product => `
-            <div class="card">
-                <img src="${product.image[0]}" alt="${product.name}">
-                <div class="card-content">
-                    <h3>${product.brandName}</h3>
-                    <p class="brand">${product.description}</p>
-                    <div class="price">
-                        <span class="final-price">₹${product.finalPrice}</span>
-                        ${product.hasOffer ? `<span class="original-price">₹${product.originalPrice}</span>` : ''}
+            <div class="card" 
+                data-category="${product.category.name}"
+                data-brand="${product.brandName}"
+                data-price="${product.finalPrice || product.originalPrice}"
+                data-name="${product.brandName}">
+                <a href="/product-detail/${product._id}">
+                    <img src="${product.image[0]}" alt="${product.name}" class="card-image">
+                    <div class="card-content">
+                        <h3 class="card-title">${product.brandName}</h3>
+                        <p class="card-description">${product.description}</p>
+                        <div class="price-wishlist">
+                            <div class="price-container">
+                                ${product.hasOffer ? `
+                                    <p class="card-price">
+                                        Rs. ${Math.floor(product.finalPrice)}
+                                        <span class="original-price">Rs. ${Math.floor(product.originalPrice)}</span>
+                                        <span class="discount-percent">-${Math.floor((product.discountAmount / product.originalPrice) * 100)}%</span>
+                                    </p>
+                                ` : `
+                                    <p class="card-price">Rs. ${Math.floor(product.originalPrice)}</p>
+                                `}
+                            </div>
+                            <button onclick="toggleWishlist('${product._id}', event)"
+                                class="wishlist-btn" data-product-id="${product._id}">
+                                <i class="wishlist-icon far fa-heart"></i>
+                            </button>
+                        </div>
                     </div>
-                </div>
+                </a>
             </div>
         `).join('');
                 }
@@ -526,17 +343,22 @@
 
                     // Show/hide clear all button
                     const clearButton = document.querySelector('.clear-filters-btn');
-                    const hasFilters = Object.values(currentFilters).some(value =>
-                        Array.isArray(value) ? value.length > 0 : Boolean(value)
-                    );
-                    clearButton.style.display = hasFilters ? 'block' : 'none';
+                    clearButton.style.display = hasActiveFilters() ? 'block' : 'none';
+                }
+
+                // Check if there are any active filters
+                function hasActiveFilters() {
+                    return Object.entries(currentFilters).some(([key, value]) => {
+                        if (Array.isArray(value)) return value.length > 0;
+                        return Boolean(value && key !== 'page');
+                    });
                 }
 
                 // Format price range for display
                 function formatPriceRange(range) {
                     if (range === '5000+') return 'Above ₹5,000';
                     const [min, max] = range.split('-');
-                    return `₹${min} - ₹${max}`;
+                    return `₹${Number(min).toLocaleString()} - ₹${Number(max).toLocaleString()}`;
                 }
 
                 // Add filter tag
@@ -570,30 +392,53 @@
                     fetchProducts();
                 };
 
+                // Clear all filters
+                document.querySelector('.clear-filters-btn').addEventListener('click', () => {
+                    currentFilters = {
+                        search: '',
+                        category: [],
+                        brands: [],
+                        priceRange: [],
+                        sort: '',
+                        page: 1
+                    };
+
+                    // Reset all inputs
+                    productSearch.value = '';
+                    sortSelect.value = '';
+                    document.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+
+                    updateActiveFilters();
+                    fetchProducts();
+                });
+
                 // Event Listeners
                 productSearch.addEventListener('input', debounce(() => {
                     currentFilters.search = productSearch.value;
                     currentFilters.page = 1;
+                    updateActiveFilters();
                     fetchProducts();
                 }, 300));
 
                 // Category search
-                categorySearch.addEventListener('input', (e) => {
+                categorySearch.addEventListener('input', debounce((e) => {
                     const searchTerm = e.target.value.toLowerCase();
                     document.querySelectorAll('.category-list .checkbox-label').forEach(label => {
                         const categoryName = label.textContent.split('(')[0].trim().toLowerCase();
                         label.style.display = categoryName.includes(searchTerm) ? '' : 'none';
                     });
-                });
-                
+                }, 300));
+
                 // Brand search
-                brandSearch.addEventListener('input', (e) => {
+                brandSearch.addEventListener('input', debounce((e) => {
                     const searchTerm = e.target.value.toLowerCase();
                     document.querySelectorAll('.brand-list .checkbox-label').forEach(label => {
                         const brandName = label.textContent.split('(')[0].trim().toLowerCase();
                         label.style.display = brandName.includes(searchTerm) ? '' : 'none';
                     });
-                });
+                }, 300));
 
                 // Sort select
                 sortSelect.addEventListener('change', () => {
@@ -602,65 +447,40 @@
                     fetchProducts();
                 });
 
-                // Category checkboxes
-                document.querySelectorAll('input[name="category"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', e => {
-                        if (e.target.checked) {
-                            currentFilters.category.push(e.target.value);
-                        } else {
-                            currentFilters.category = currentFilters.category
-                                .filter(c => c !== e.target.value);
-                        }
-                        currentFilters.page = 1;
-                        updateActiveFilters();
-                        fetchProducts();
-                    });
-                });
+                function setupFilterCheckboxes(filterType) {
+                    // Map filter types to their corresponding keys in currentFilters
+                    const filterKeyMap = {
+                        'category': 'category',
+                        'brand': 'brands',
+                        'price': 'priceRange'
+                    };
 
-                // Brand checkboxes
-                document.querySelectorAll('input[name="brand"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', e => {
-                        if (e.target.checked) {
-                            currentFilters.brands.push(e.target.value);
-                        } else {
-                            currentFilters.brands = currentFilters.brands
-                                .filter(b => b !== e.target.value);
-                        }
-                        currentFilters.page = 1;
-                        updateActiveFilters();
-                        fetchProducts();
-                    });
-                });
+                    document.querySelectorAll(`input[name="${filterType}"]`).forEach(checkbox => {
+                        checkbox.addEventListener('change', e => {
+                            const filterKey = filterKeyMap[filterType];
 
-                // Price range checkboxes
-                document.querySelectorAll('input[name="price"]').forEach(checkbox => {
-                    checkbox.addEventListener('change', e => {
-                        if (e.target.checked) {
-                            currentFilters.priceRange.push(e.target.value);
-                        } else {
-                            currentFilters.priceRange = currentFilters.priceRange
-                                .filter(p => p !== e.target.value);
-                        }
-                        currentFilters.page = 1;
-                        updateActiveFilters();
-                        fetchProducts();
-                    });
-                });
+                            // Ensure the array exists before trying to modify it
+                            if (!currentFilters[filterKey]) {
+                                currentFilters[filterKey] = [];
+                            }
 
-                // Update URL with current filters
-                function updateURL() {
-                    const url = new URL(window.location);
-                    Object.entries(currentFilters).forEach(([key, value]) => {
-                        if (Array.isArray(value) && value.length > 0) {
-                            url.searchParams.set(key, value.join(','));
-                        } else if (value && !Array.isArray(value)) {
-                            url.searchParams.set(key, value);
-                        } else {
-                            url.searchParams.delete(key);
-                        }
+                            if (e.target.checked) {
+                                currentFilters[filterKey].push(e.target.value);
+                            } else {
+                                currentFilters[filterKey] = currentFilters[filterKey]
+                                    .filter(item => item !== e.target.value);
+                            }
+                            currentFilters.page = 1;
+                            updateActiveFilters();
+                            fetchProducts();
+                        });
                     });
-                    window.history.pushState({}, '', url);
                 }
+
+                // Setup all filter checkboxes
+                setupFilterCheckboxes('category');
+                setupFilterCheckboxes('brand');
+                setupFilterCheckboxes('price');
 
                 // Initialize filters from URL
                 function initializeFiltersFromURL() {
@@ -712,62 +532,6 @@
         </script>
         <!--===============================================================================================-->
         <script src="js/main.js"></script>
-        <style>
-            .price-wishlist {
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 10px;
-                padding: 5px 0;
-            }
-
-            .price-container {
-                flex-grow: 1;
-            }
-
-            .card-price {
-                margin: 0;
-                font-size: 16px;
-                display: flex;
-                align-items: center;
-                gap: 8px;
-                flex-wrap: wrap;
-            }
-
-            .original-price {
-                text-decoration: line-through;
-                color: #999;
-                font-size: 14px;
-            }
-
-            .discount-percent {
-                background-color: #ff4444;
-                color: white;
-                padding: 2px 6px;
-                border-radius: 3px;
-                font-size: 12px;
-            }
-
-            .wishlist-icon {
-                cursor: pointer;
-                padding: 5px;
-            }
-
-            .wishlist-icon i:hover {
-                color: #ff4444;
-            }
-
-            .loader {
-                text-align: center;
-                padding: 20px;
-            }
-
-            .error {
-                text-align: center;
-                color: red;
-                padding: 20px;
-            }
-        </style>
 </body>
 
 </html>

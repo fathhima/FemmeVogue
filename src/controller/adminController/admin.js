@@ -155,13 +155,22 @@ const listUnlist = async (req, res) => {
 
 const products = async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1
+    const limit = 4
+    const skip = (page - 1) * limit
+
+    const totalProducts = await Products.countDocuments();
+    const totalPages = Math.ceil(totalProducts / limit);
+
     const products = await Products.find()
       .populate("category")
       .populate({
         path: "variants",
         match: { isDeleted: false },
-      });
+      }).skip(skip).limit(limit).sort({createdAt: -1})
+
     const categories = await Category.find({});
+
     const productsWithVariants = await Promise.all(
       products.map(async (product) => {
         const variants = await productVariant.find({
@@ -174,6 +183,13 @@ const products = async (req, res) => {
     res.render("admin/products", {
       categories,
       products: productsWithVariants,
+      currentPage: page,
+      limit,
+      totalPages: totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      nextPage: page + 1,
+      prevPage: page - 1,
     });
   } catch (err) {
     console.error(err);
@@ -340,8 +356,61 @@ const productListUnlist = async (req, res) => {
 };
 
 const loadOrders = async (req, res) => {
-  const orders = await Orders.find({});
-  res.render("admin/orders", { orders: orders });
+  const page = parseInt(req.query.page) || 1
+  const limit = 4
+  const skip = (page - 1) * limit
+
+  const totalProducts = await Products.countDocuments();
+  const totalPages = Math.ceil(totalProducts / limit);
+
+  const orders = await Orders.find({}).skip(skip).limit(limit).sort({createdAt: -1})
+  res.render("admin/orders", { 
+      orders: orders,
+      currentPage: page,
+      limit,
+      totalPages: totalPages,
+      hasNextPage: page < totalPages,
+      hasPrevPage: page > 1,
+      nextPage: page + 1,
+      prevPage: page - 1,
+   });
+};
+
+const filterOrders = async (req, res) => {
+  try {
+      const filter = req.query.status || 'all';
+      let query = {};
+
+      switch (filter) {
+          case 'pending':
+              query.orderStatus = 'pending';
+              break;
+          case 'processing':
+              query.orderStatus = 'processing';
+              break;
+          case 'shipped':
+              query.orderStatus = 'shipped';
+              break;
+          case 'delivered':
+              query.orderStatus = 'delivered';
+              break;
+          case 'cancelled':
+              query.orderStatus = 'cancelled';
+              break;
+      }
+
+      const orders = await Orders.find(query).sort({ createdAt: -1 });
+      res.status(200).json({
+          success: true,
+          orders
+      });
+  } catch (error) {
+    console.log(error)
+      res.status(500).json({
+          success: false,
+          message: 'Error fetching coupons'
+      });
+  }
 };
 
 const orderDetails = async (req, res) => {
@@ -698,6 +767,7 @@ module.exports = {
   productsUpdate,
   productListUnlist,
   loadOrders,
+  filterOrders,
   orderDetails,
   orderStatus,
   productCancel,
