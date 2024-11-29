@@ -476,6 +476,8 @@ const shop = async (req, res) => {
         limit = 12
     } = req.query;
 
+    console.log(priceRange)
+
     let query = { isDeleted: false };
     let sortOption = {};
 
@@ -483,52 +485,56 @@ const shop = async (req, res) => {
         const searchRegex = new RegExp(search.trim(), 'i');
         query.$or = [
             { brandName: searchRegex },
-            { description: searchRegex },
             { 'category.name': searchRegex }
         ];
     }
 
     if (category) {
-        const categoryArray = category.split(',').map(cat => cat.trim());
-        query['category.name'] = { $in: categoryArray };
-    }
-
+      const categoryArray = category.split(',').map(cat => cat.trim());
+  
+      // Fetch ObjectIds from the categories collection
+      const categoryIds = await categories
+          .find({ name: { $in: categoryArray } })
+          .select('_id')
+          .lean();
+  
+      query.category = { $in: categoryIds.map(cat => cat._id) };
+  }
+  
     if (brands) {
         const brandArray = brands.split(',').map(brand => brand.trim());
         query.brandName = { $in: brandArray };
     }
 
     if (priceRange) {
-        const ranges = priceRange.split(',');
-        const priceQuery = ranges.map(range => {
-            if (range === '5000+') {
-                return { variants: { $elemMatch: { price: { $gte: 5000 } } } };
-            }
-            const [min, max] = range.split('-').map(Number);
-            return {
-                variants: {
-                    $elemMatch: {
-                        price: { 
-                            $gte: min, 
-                            $lte: max 
-                        }
-                    }
-                }
-            };
-        });
-
-        query = {
-            ...query,
-            $or: [...(query.$or || []), ...priceQuery]
-        };
-    }
+      const ranges = priceRange.split(',');
+      const priceQuery = await Promise.all(ranges.map(async (range) => {
+          if (range === '5000+') {
+              const variantIds = await productVariant.find({ price: { $gte: 5000 } }).select('_id');
+              return { variants: { $in: variantIds } };
+          }
+          const [min, max] = range.split('-').map(Number);
+          const variantIds = await productVariant.find({ 
+              price: { 
+                  $gte: min, 
+                  $lte: max 
+              }
+          }).select('_id');
+          return { variants: { $in: variantIds } };
+      }));
+  
+      query = {
+          ...query,
+          $or: [...(query.$or || []), ...priceQuery]
+      };
+  }
 
     switch (sort) {
         case 'price-low':
-            sortOption = { 'variants.0.price': 1 };
+            sortOption = { 'variants.price': 1 };
             break;
         case 'price-high':
-            sortOption = { 'variants.0.price': -1 };
+            sortOption = { 'variants.price': -1 };
             break;
         case 'a-z':
             sortOption = { brandName: 1 };
@@ -661,35 +667,47 @@ const addToWishlist = async (req, res) => {
       }
 
       const userId = req.session.user._id;
-      const productId = req.params.id;
-      const user = await User.findById(userId);
-      
-      if (!user) {
+      const productId = new mongoose.Types.ObjectId(req.params.id);
+
+      // Check if the product is already in the user's wishlist
+      const wishlistItem = await User.findOne(
+          { _id: userId, 'wishlist.product': productId }
+      );
+
+      let updateResult;
+      let added;
+
+      if (wishlistItem) {
+          // Remove from wishlist
+          updateResult = await User.findByIdAndUpdate(
+              userId,
+              { $pull: { wishlist: { product: productId } } },
+              { new: true }
+          );
+          added = false;
+      } else {
+          // Ensure atomic addition and avoid duplicates using $addToSet
+          updateResult = await User.findByIdAndUpdate(
+              userId,
+              { 
+                  $addToSet: { 
+                      wishlist: { 
+                          product: productId, 
+                          addedAt: new Date() 
+                      } 
+                  } 
+              },
+              { new: true }
+          );
+          added = true;
+      }
+
+      if (!updateResult) {
           return res.status(404).json({
               success: false,
               message: 'User not found'
           });
       }
-
-      const wishlistItem = user.wishlist.find(
-          item => item.product.toString() === productId
-      );
-
-      let added = false;
-
-      if (wishlistItem) {
-          user.wishlist = user.wishlist.filter(
-              item => item.product.toString() !== productId
-          );
-      } else {
-          user.wishlist.push({
-              product: productId,
-              addedAt: new Date()
-          });
-          added = true;
-      }
-
-      await user.save();
 
       res.json({
           success: true,
@@ -698,7 +716,7 @@ const addToWishlist = async (req, res) => {
       });
 
   } catch (error) {
-      console.log(error)
+      console.log(error);
       res.status(500).json({
           success: false,
           message: 'Failed to update wishlist'

@@ -68,7 +68,7 @@ h2 {
 }
 
 .message-info {
-  color: #333;
+  color: red;
   font-size: 1rem; 
   margin: 10px 0; 
 }

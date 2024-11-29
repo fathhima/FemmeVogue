@@ -103,7 +103,9 @@
 								<span>
 									<%= Products.brandName %>
 								</span>
-								<div class="wishlist-icon small-wishlist">
+								<!-- Example product card -->
+								<div class="wishlist-icon small-wishlist" data-product-id="<%= Products._id %>"
+									onclick="toggleWishlist('<%= Products._id %>')">
 									<i class="fa-regular fa-heart"></i>
 								</div>
 							</h4>
@@ -445,6 +447,7 @@
 				const quantityInput = document.querySelector('.num-product');
 				const incrementBtn = document.querySelector('.btn-num-product-up');
 				const decrementBtn = document.querySelector('.btn-num-product-down');
+				const wishlistIcon = document.querySelector('.wishlist-icon');
 
 				// Product variants data with offers
 				let variants;
@@ -709,7 +712,82 @@
 					}
 				});
 			})
+			async function toggleWishlist(productId) {
+				try {
+					const response = await axios.post(`/shop/wishlist/toggle/${productId}`);
 
+					if (response.data.success) {
+						const wishlistIcon = document.querySelector(`.wishlist-icon[data-product-id="${productId}"]`);
+						const heartIcon = wishlistIcon.querySelector('.fa-heart');
+
+						if (response.data.added) {
+							// Added to wishlist
+							heartIcon.classList.remove('fa-regular');
+							heartIcon.classList.add('fa-solid');
+
+							Swal.fire({
+								icon: 'success',
+								title: 'Added to Wishlist!',
+								text: response.data.message,
+								showConfirmButton: false,
+								timer: 1500,
+								toast: true,
+								position: 'top-end'
+							});
+
+							// Save to local storage
+							localStorage.setItem(`wishlist_${productId}`, 'true');
+						} else {
+							// Removed from wishlist
+							heartIcon.classList.remove('fa-solid');
+							heartIcon.classList.add('fa-regular');
+
+							Swal.fire({
+								icon: 'info',
+								title: 'Removed from Wishlist',
+								text: response.data.message,
+								showConfirmButton: false,
+								timer: 1500,
+								toast: true,
+								position: 'top-end'
+							});
+
+							// Remove from local storage
+							localStorage.removeItem(`wishlist_${productId}`);
+						}
+					} else {
+						// Handle error (e.g., not logged in)
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: response.data.message
+						});
+					}
+				} catch (error) {
+					console.error('Wishlist error:', error);
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'Failed to update wishlist. Please try again.'
+					});
+				}
+			}
+
+			// Function to restore wishlist icon states on page load
+			function restoreWishlistIcons() {
+				const wishlistIcons = document.querySelectorAll('.wishlist-icon');
+
+				wishlistIcons.forEach(icon => {
+					const productId = icon.dataset.productId;
+					const heartIcon = icon.querySelector('.fa-heart');
+
+					// Check local storage for wishlist state
+					if (localStorage.getItem(`wishlist_${productId}`) === 'true') {
+						heartIcon.classList.remove('fa-regular');
+						heartIcon.classList.add('fa-solid');
+					}
+				});
+			}
 
 		</script>
 

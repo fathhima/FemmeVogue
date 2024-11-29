@@ -1,124 +1,129 @@
 <div class="bg-white shadow-md rounded-lg p-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-2xl font-bold">My Wishlist</h2>
-        <span class="text-gray-600">
-            <%= wishlistItems.length %> item<%= wishlistItems.length !== 1 ? 's' : '' %>
-        </span>
+  <div class="flex justify-between items-center mb-6">
+    <h2 class="text-2xl font-bold">My Wishlist</h2>
+    <span class="text-gray-600">
+      <%= wishlistItems.length %> item<%= wishlistItems.length !==1 ? 's' : '' %>
+    </span>
+  </div>
+
+  <% if (isEmpty) { %>
+    <div class="text-center py-8">
+      <div class="mb-4">
+        <i class="far fa-heart text-gray-400 text-5xl"></i>
+      </div>
+      <h3 class="text-xl font-semibold mb-2">Your wishlist is empty</h3>
+      <p class="text-gray-600 mb-4">Browse our products and add your favorites!</p>
+      <a href="/shop"
+        class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+        Continue Shopping
+      </a>
     </div>
-
-    <% if (isEmpty) { %>
-        <div class="text-center py-8">
-            <div class="mb-4">
-                <i class="far fa-heart text-gray-400 text-5xl"></i>
-            </div>
-            <h3 class="text-xl font-semibold mb-2">Your wishlist is empty</h3>
-            <p class="text-gray-600 mb-4">Browse our products and add your favorites!</p>
-            <a href="/shop" class="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                Continue Shopping
-            </a>
-        </div>
     <% } else { %>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="wishlistGrid">
-            <% wishlistItems.forEach(item => { %>
-                <div class="border rounded-lg overflow-hidden wishlist-item" data-product-id="<%= item.productId %>">
-                    <div class="relative">
-                        <img src="/<%= item.image[0] %>" 
-                             alt="<%= item.name %>" 
-                             class="w-full h-48 object-cover">
-                             <button
-                             onclick="removeFromWishlist('<%= item.productId %>')"
-                             class="remove-from-wishlist absolute top-2 right-2 bg-white rounded-full p-2 shadow hover:bg-gray-100"
-                             data-product-id="<%= item.productId %>"
-                             title="Remove from wishlist">
-                             <i class="fas fa-times text-red-600"></i>
-                         </button>                         
-                    </div>
-                    
-                    <div class="p-4">
-                        <h3 class="font-semibold text-lg mb-1"><%= item.brandName %></h3>
-                        <p class="text-gray-600 text-sm mb-2"><%= item.description %></p>
-                        
-                        <div class="flex justify-between items-center mb-4">
-                            <div class="price-container">
-                                    <p class="text-lg">
-                                        <span class="font-bold text-green-600">
-                                            ₹<%= Math.floor(item.variants[0].price) %>
-                                        </span>
-                                    </p>
-                            </div>
-                            <small class="text-gray-500">
-                                Added <%= new Date(item.addedAt).toLocaleDateString() %>
-                            </small>
-                        </div>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="wishlistGrid">
+        <% wishlistItems.forEach(item=> { %>
+          <div class="border rounded-lg overflow-hidden wishlist-item" data-product-id="<%= item.productId %>">
+            <div class="relative">
+              <img src="/<%= item.image[0] %>" alt="<%= item.name %>" class="w-full h-48 object-cover">
+                <button
+                  class="remove-from-wishlist absolute top-2 right-2 bg-white rounded-full p-2 shadow hover:bg-gray-100"
+                  data-product-id="<%= item.productId %>" title="Remove from wishlist">
+                  <i class="fas fa-times text-red-600"></i>
+                </button>
 
-                        <div class="flex gap-2">
-                            <button onclick="addToCart('<%= item.productId %>')" 
-                                    class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
-                                Add to Cart
-                            </button>
-                            <a href="/product-detail/<%= item.productId %>" 
-                               class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
-                                View Details
-                            </a>
-                        </div>
-                    </div>
+            </div>
+
+            <div class="p-4">
+              <h3 class="font-semibold text-lg mb-1">
+                <%= item.brandName %>
+              </h3>
+              <p class="text-gray-600 text-sm mb-2">
+                <%= item.description %>
+              </p>
+
+              <div class="flex justify-between items-center mb-4">
+                <div class="price-container">
+                  <p class="text-lg">
+                    <span class="font-bold text-green-600">
+                      ₹<%= Math.floor(item.variants[0].price) %>
+                    </span>
+                  </p>
                 </div>
-            <% }); %>
-        </div>
-    <% } %>
+                <small class="text-gray-500">
+                  Added <%= new Date(item.addedAt).toLocaleDateString() %>
+                </small>
+              </div>
+
+              <div class="flex gap-2">
+                <!-- <button onclick="addToCart('<%= item.productId %>')"
+                  class="flex-1 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">
+                  Add to Cart
+                </button> -->
+                <a href="/product-detail/<%= item.productId %>"
+                  class="px-4 py-2 border border-gray-300 rounded hover:bg-gray-50 transition-colors">
+                  View Details
+                </a>
+              </div>
+            </div>
+          </div>
+          <% }); %>
+      </div>
+      <% } %>
 </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
-  <script>
-    document.querySelectorAll('.remove-from-wishlist').forEach(btn => {
-      btn.addEventListener('click', async (event) => {
-        const productId = event.target.dataset.productId;
-        try {
-          await axios.delete(`/profile/wishlist/${productId}`);
-          Swal.fire({
-            title: 'Success',
-            text: 'Product removed from wishlist',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          }).then(()=> {
-            location.reload()
-          })
-          event.target.closest('.bg-white').remove();
-        } catch (error) {
-          Swal.fire({
-            title: 'Error',
-            text: 'Failed to remove product from wishlist',
-            icon: 'error',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
-    });
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.1.5/dist/sweetalert2.min.js"></script>
+<script>
+  document.querySelectorAll('.remove-from-wishlist').forEach(btn => {
+    btn.addEventListener('click', async (event) => {
+      const productId = btn.dataset.productId;
+      try {
+        await axios.delete(`/profile/wishlist/${productId}`);
 
-    document.querySelectorAll('.add-to-cart').forEach(btn => {
-      btn.addEventListener('click', async (event) => {
-        const productId = event.target.dataset.productId;
-        try {
-          await axios.post('/add-to-cart', { productId });
-          Swal.fire({
-            title: 'Success',
-            text: 'Product added to cart',
-            icon: 'success',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        } catch (error) {
-          Swal.fire({
-            title: 'Error',
-            text: 'Failed to add product to cart',
-            icon: 'error',
-            timer: 2000,
-            showConfirmButton: false
-          });
-        }
-      });
+        Swal.fire({
+          title: 'Success',
+          text: 'Product removed from wishlist',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        }).then(() => {
+          location.reload(); 
+        });
+
+        btn.closest('.bg-white').remove();
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to remove product from wishlist',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
     });
-  </script>
+  });
+
+
+  document.querySelectorAll('.add-to-cart').forEach(btn => {
+    btn.addEventListener('click', async (event) => {
+      const productId = event.target.dataset.productId;
+      try {
+        await axios.post('/add-to-cart', { productId });
+        Swal.fire({
+          title: 'Success',
+          text: 'Product added to cart',
+          icon: 'success',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      } catch (error) {
+        Swal.fire({
+          title: 'Error',
+          text: 'Failed to add product to cart',
+          icon: 'error',
+          timer: 2000,
+          showConfirmButton: false
+        });
+      }
+    });
+  });
+</script>

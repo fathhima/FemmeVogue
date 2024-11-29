@@ -51,17 +51,14 @@
                     <h3 class="filter-title">Categories</h3>
                     <input type="text" class="category-search" placeholder="Search categories..." id="categorySearch">
                     <div class="category-list checkbox-group" style="padding-right: 10px;">
-                        <% const categories=[...new Set(Products.map(p=> p.category.name))].sort() %>
-                            <% Categories.forEach(category=> { %>
-                                <label class="checkbox-label">
-                                    <input type="checkbox" name="category" value="<%= category %>">
-                                    <%= category.name %>
-                                        <% const count=Products.filter(p=>
-                                            p.category.name === category).length
-                                            %>
-                                            <span class="count">(<%= count %>)</span>
-                                </label>
-                                <% }) %>
+                        <% Categories.forEach(category=> { %>
+                            <label class="checkbox-label">
+                                <input type="checkbox" name="category" value="<%= category.name %>">
+                                <%= category.name %>
+                                <% const count = Products.filter(p => p.category.name === category.name).length %>
+                                <span class="count">(<%= count %>)</span>
+                            </label>
+                        <% }) %>
                     </div>
                 </div>
 
@@ -182,10 +179,10 @@
                                                     </p>
                                                     <% } %>
                                         </div>
-                                        <button onclick="toggleWishlist('<%= product._id %>', event)"
-                                            class="wishlist-btn" data-product-id="<%= product._id %>">
-                                            <i class="wishlist-icon far fa-heart"></i>
-                                        </button>
+                                        <div class="wishlist-icon small-wishlist" data-product-id="<%= product._id %>"
+                                            onclick="toggleWishlist('<%= product._id %>')">
+                                            <i class="fa-regular fa-heart"></i>
+                                        </div>
                                     </div>
                                 </div>
                             </a>
@@ -510,6 +507,82 @@
                 // Initialize
                 initializeFiltersFromURL();
             });
+            async function toggleWishlist(productId) {
+				try {
+					const response = await axios.post(`/shop/wishlist/toggle/${productId}`);
+
+					if (response.data.success) {
+						const wishlistIcon = document.querySelector(`.wishlist-icon[data-product-id="${productId}"]`);
+						const heartIcon = wishlistIcon.querySelector('.fa-heart');
+
+						if (response.data.added) {
+							// Added to wishlist
+							heartIcon.classList.remove('fa-regular');
+							heartIcon.classList.add('fa-solid');
+
+							Swal.fire({
+								icon: 'success',
+								title: 'Added to Wishlist!',
+								text: response.data.message,
+								showConfirmButton: false,
+								timer: 1500,
+								toast: true,
+								position: 'top-end'
+							});
+
+							// Save to local storage
+							localStorage.setItem(`wishlist_${productId}`, 'true');
+						} else {
+							// Removed from wishlist
+							heartIcon.classList.remove('fa-solid');
+							heartIcon.classList.add('fa-regular');
+
+							Swal.fire({
+								icon: 'info',
+								title: 'Removed from Wishlist',
+								text: response.data.message,
+								showConfirmButton: false,
+								timer: 1500,
+								toast: true,
+								position: 'top-end'
+							});
+
+							// Remove from local storage
+							localStorage.removeItem(`wishlist_${productId}`);
+						}
+					} else {
+						// Handle error (e.g., not logged in)
+						Swal.fire({
+							icon: 'error',
+							title: 'Oops...',
+							text: response.data.message
+						});
+					}
+				} catch (error) {
+					console.error('Wishlist error:', error);
+					Swal.fire({
+						icon: 'error',
+						title: 'Error',
+						text: 'Failed to update wishlist. Please try again.'
+					});
+				}
+			}
+
+			// Function to restore wishlist icon states on page load
+			function restoreWishlistIcons() {
+				const wishlistIcons = document.querySelectorAll('.wishlist-icon');
+
+				wishlistIcons.forEach(icon => {
+					const productId = icon.dataset.productId;
+					const heartIcon = icon.querySelector('.fa-heart');
+
+					// Check local storage for wishlist state
+					if (localStorage.getItem(`wishlist_${productId}`) === 'true') {
+						heartIcon.classList.remove('fa-regular');
+						heartIcon.classList.add('fa-solid');
+					}
+				});
+			}
         </script>
         <!--===============================================================================================-->
         <script src="vendor/perfect-scrollbar/perfect-scrollbar.min.js"></script>
