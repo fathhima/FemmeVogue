@@ -19,7 +19,8 @@ let transporter = nodemailer.createTransport({
 const homePage = async (req, res) => {
   try {
     const user = req.session.user;
-    const trendingEthnic = await products.aggregate([
+
+    const trendingProducts = await products.aggregate([
       {
         $lookup: {
           from: 'categories', 
@@ -33,7 +34,9 @@ const homePage = async (req, res) => {
       },
       {
         $match: {
-          'category.name': { $in: ['Salwars', 'Sarees'] }
+          'category.name': { 
+            $in: ['Salwars', 'Sarees', 'T-Shirt', 'Shirts', 'Jeans', 'tops'] 
+          }
         }
       },
       {
@@ -45,93 +48,51 @@ const homePage = async (req, res) => {
         }
       },
       {
-        $limit: 4
+        $limit: 8 
       }
     ]);
     
-    // For western wear
-    const trendingWestern = await products.aggregate([
-      {
-        $lookup: {
-          from: 'categories', 
-          localField: 'category',
-          foreignField: '_id',
-          as: 'category'
+    // Optimize price calculation with bulk processing
+    const processedProducts = await Promise.all(
+      trendingProducts.map(async (product) => {
+        const variant = product.variants[0]?.price;
+        if (!variant) {
+          return {
+            ...product,
+            finalPrice: 0,
+            originalPrice: 0,
+            hasOffer: false,
+            discountAmount: 0
+          };
         }
-      },
-      {
-        $unwind: '$category'
-      },
-      {
-        $match: {
-          'category.name': { $in: ['T-Shirt', 'Shirts', 'Jeans', 'tops'] }
-        }
-      },
-      {
-        $lookup: {
-          from: 'productvariants',
-          localField: 'variants',
-          foreignField: '_id',
-          as: 'variants'
-        }
-      },
-      {
-        $limit: 4
-      }
-    ]);
 
-    const processedEthnic = await Promise.all(trendingEthnic.map(async (product) => {
-      const variant = product.variants[0]?.price;
-      if (!variant) {
+        // Single calculation method
+        const priceInfo = await calculateFinalPrice(product, variant);
         return {
           ...product,
-          finalPrice: 0,
-          originalPrice: 0,
-          hasOffer: false,
-          discountAmount: 0
+          ...priceInfo,
+          image: product.image || [],
+          category: {
+            ...product.category,
+            name: product.category?.name || 'Uncategorized'
+          }
         };
-      }
-      const priceInfo = await calculateFinalPrice(product, variant);
-      return {
-        ...product,
-        ...priceInfo,
-        image: product.image || [],
-        category: {
-          ...product.category,
-          name: product.category?.name || 'Uncategorized'
-        }
-      };
-    }));
+      })
+    );
 
-    // Process western wear products with price calculations
-    const processedWestern = await Promise.all(trendingWestern.map(async (product) => {
-      const variant = product.variants[0]?.price;
-      if (!variant) {
-        return {
-          ...product,
-          finalPrice: 0,
-          originalPrice: 0,
-          hasOffer: false,
-          discountAmount: 0
-        };
-      }
+    // Separate ethnic and western products after processing
+    const trendingEthnic = processedProducts.filter(product => 
+      ['Salwars', 'Sarees'].includes(product.category.name)
+    ).slice(0, 4);
 
-      const priceInfo = await calculateFinalPrice(product, variant);
-      return {
-        ...product,
-        ...priceInfo,
-        image: product.image || [],
-        category: {
-          ...product.category,
-          name: product.category?.name || 'Uncategorized'
-        }
-      };
-    }));
+    const trendingWestern = processedProducts.filter(product => 
+      ['T-Shirt', 'Shirts', 'Jeans', 'tops'].includes(product.category.name)
+    ).slice(0, 4);
 
     res.render("user/index", { 
       user,
-      trendingEthnic: processedEthnic,
-      trendingWestern: processedWestern 
+      trendingEthnic,
+      trendingWestern 
     });
   } catch (err) {
     console.error(err);
@@ -475,8 +436,6 @@ const shop = async (req, res) => {
         page = 1,
         limit = 12
     } = req.query;
-
-    console.log(priceRange)
 
     let query = { isDeleted: false };
     let sortOption = {};

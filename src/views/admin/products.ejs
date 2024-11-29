@@ -218,7 +218,7 @@
                         <label for="productImage1" class="form-label">Product Image 1</label>
                         <input type="file" class="form-control" name="productImage1" id="productImage1" accept="image/*"
                             required>
-                        <img id="imagePreview1" style="display: none; max-width: 100%;">
+                        <img id="imagePreview1" style="display: none; max-width: 100%">
                     </div>
                     <div class="mb-3">
                         <label for="productImage2" class="form-label">Product Image 2</label>
@@ -585,7 +585,7 @@
         function handleImageUpload(input, previewId, cropperInstance) {
             const file = input.files[0];
             if (file) {
-                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/avif'];
+                const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/avif','image/webp'];
                 if (!validImageTypes.includes(file.type)) {
                     Swal.fire({
                         title: 'Error',
@@ -842,7 +842,7 @@
                                     formData.append(`imageModified${i}`, 'true');
                                 }
                                 resolve();
-                            }, 'image/jpeg', 0.8);
+                            }, 'image/jpeg','image/webp', 0.8);
                         });
                     }
                 }
