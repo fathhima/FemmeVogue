@@ -154,7 +154,7 @@
                             data-price="<%= product.finalPrice || product.originalPrice %>"
                             data-name="<%= product.brandName %>">
                             <a href="/product-detail/<%= product._id%>">
-                                <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+                                <img src="<%= product.image[0] %>" alt="<%= product.name %>" class="card-image" loading="lazy">
                                 <div class="card-content">
                                     <h3 class="card-title">
                                         <%= product.brandName %>

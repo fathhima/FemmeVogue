@@ -87,7 +87,7 @@
 											<div class="wrap-pic-w pos-relative">
 												<div class="imageZoom" style="--zoom-url: url('/<%= img %>');">
 													<img src="/<%= img %>" alt="Product Image <%= index + 1 %>"
-														style="width: 100%; height: auto;">
+														style="width: 100%; height: auto;" loading="lazy">
 												</div>
 											</div>
 										</div>
@@ -308,7 +308,7 @@
 												<!-- Review -->
 												<div class="flex-w flex-t p-b-68">
 													<div class="wrap-pic-s size-109 bor0 of-hidden m-r-18 m-t-6">
-														<img src="/images/avatar-01.jpg" alt="AVATAR">
+														<img src="/images/avatar-01.jpg" alt="AVATAR"loading="lazy">
 													</div>
 
 													<div class="size-207">
@@ -408,7 +408,7 @@
 			<% relatedProducts.forEach(product=> { %>
 				<div class="card" data-category="<%= product.category.name %>">
 					<a href="/product-detail/<%= product._id%>">
-						<img src="/<%= product.image[0] %>" alt="<%= product.name %>" class="card-image">
+						<img src="/<%= product.image[0] %>" alt="<%= product.name %>" class="card-image" loading="lazy">
 						<!-- Adjust the property name as needed -->
 						<div class="card-content">
 							<h3 class="card-title">
